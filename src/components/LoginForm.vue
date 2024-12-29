@@ -32,41 +32,16 @@
                             </div>
 
                             <v-alert
-                                v-if="successMessage"
-                                type="success"
+                                v-if="error || successMessage"
+                                :type="error ? 'error' : 'success'"
                                 variant="tonal"
                                 closable
                                 :timeout="4000"
                                 class="mb-4"
                                 density="comfortable"
                                 border="start"
+                                :text="error || successMessage"
                             >
-                                <div class="d-flex align-center">
-                                    <v-icon icon="mdi-check-circle" start class="me-3"></v-icon>
-                                    <div>
-                                        <div class="text-subtitle-1 font-weight-medium">Success</div>
-                                        <div class="text-body-2">{{ successMessage }}</div>
-                                    </div>
-                                </div>
-                            </v-alert>
-
-                            <v-alert
-                                v-if="error"
-                                type="error"
-                                variant="tonal"
-                                closable
-                                :timeout="4000"
-                                class="mb-4"
-                                density="comfortable"
-                                border="start"
-                            >
-                                <div class="d-flex align-center">
-                                    <v-icon icon="mdi-alert-circle" start class="me-3"></v-icon>
-                                    <div>
-                                        <div class="text-subtitle-1 font-weight-medium">Login Failed</div>
-                                        <div class="text-body-2">{{ error }}</div>
-                                    </div>
-                                </div>
                             </v-alert>
 
                             <v-form @submit.prevent="handleSubmit" v-model="isFormValid" ref="loginForm">
@@ -190,6 +165,7 @@ export default {
          */
         async handleGoogleLogin(response) {
             try {
+                console.log("response google::",response)
                 await this.googleAuth(response.credential)
                 this.$router.push('/dashboard')
             } catch (error) {

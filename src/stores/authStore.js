@@ -34,7 +34,7 @@ export const useAuthStore = defineStore('auth', {
           ...userData,
           iv: this.generateIv()
         }
-        const response = await apiClient.post('/users', payload)
+        const response = await apiClient.post('/auth/signup', payload)
         this.successMessage = 'Registration successful! Please login to continue.'
         return response.data
       } catch (error) {
@@ -79,9 +79,10 @@ export const useAuthStore = defineStore('auth', {
       try {
         this.loading = true
         this.clearMessages()
-        const response = await apiClient.post('/auth/google', { credential })
+        const response = await apiClient.post('/auth/google', { token: credential })
         this.user = response.data
         localStorage.setItem('user', JSON.stringify(response.data))
+        this.successMessage = 'Google authentication successful! Welcome back!'
         return response.data
       } catch (error) {
         if (Array.isArray(error.response?.data)) {
