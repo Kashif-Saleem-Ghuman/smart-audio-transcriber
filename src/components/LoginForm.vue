@@ -31,6 +31,44 @@
                                 </v-divider>
                             </div>
 
+                            <v-alert
+                                v-if="successMessage"
+                                type="success"
+                                variant="tonal"
+                                closable
+                                :timeout="4000"
+                                class="mb-4"
+                                density="comfortable"
+                                border="start"
+                            >
+                                <div class="d-flex align-center">
+                                    <v-icon icon="mdi-check-circle" start class="me-3"></v-icon>
+                                    <div>
+                                        <div class="text-subtitle-1 font-weight-medium">Success</div>
+                                        <div class="text-body-2">{{ successMessage }}</div>
+                                    </div>
+                                </div>
+                            </v-alert>
+
+                            <v-alert
+                                v-if="error"
+                                type="error"
+                                variant="tonal"
+                                closable
+                                :timeout="4000"
+                                class="mb-4"
+                                density="comfortable"
+                                border="start"
+                            >
+                                <div class="d-flex align-center">
+                                    <v-icon icon="mdi-alert-circle" start class="me-3"></v-icon>
+                                    <div>
+                                        <div class="text-subtitle-1 font-weight-medium">Login Failed</div>
+                                        <div class="text-body-2">{{ error }}</div>
+                                    </div>
+                                </div>
+                            </v-alert>
+
                             <v-form @submit.prevent="handleSubmit" v-model="isFormValid" ref="loginForm">
                                 <v-text-field v-model="formData.email" label="Email" type="email"
                                     :rules="validationRules.emailRules" required prepend-inner-icon="mdi-email"
@@ -43,9 +81,9 @@
                                     @click:append-inner="togglePassword" variant="outlined" density="comfortable"
                                     class="mb-4" />
 
-                                <v-btn color="primary" block size="large" type="submit" :loading="loading"
-                                    :disabled="!isFormValid" class="mb-4">
-                                    Login
+                                <v-btn color="primary" block type="submit" :loading="loading"
+                                    :disabled="!isFormValid || loading" class="mb-4">
+                                    {{ loading ? 'Please wait...' : 'Login' }}
                                 </v-btn>
 
                                 <div class="text-center mb-4">
@@ -64,6 +102,8 @@
 
 <script>
 import { GoogleLogin } from 'vue3-google-login'
+import { useAuthStore } from '@/stores/authStore'
+import { mapState, mapActions } from 'pinia'
 
 /**
  * @component LoginForm
@@ -105,7 +145,13 @@ export default {
         }
     },
 
+    computed: {
+        ...mapState(useAuthStore, ['loading', 'error', 'successMessage'])
+    },
+
     methods: {
+        ...mapActions(useAuthStore, ['login', 'googleAuth']),
+
         /**
          * Toggles password field visibility between text and password type
          * @returns {void}
@@ -125,19 +171,13 @@ export default {
 
             if (isValid) {
                 try {
-                    this.loading = true
-                    // Implement your login logic here
-                    console.log('Login attempt:', this.formData)
-
-                    // Simulate API call
-                    await new Promise(resolve => setTimeout(resolve, 1000))
-
-                    // On success, redirect or show success message
-                    this.$router.push('/dashboard')
+                    await this.login(this.formData)
+                    // Wait for a moment to show the success message
+                    setTimeout(() => {
+                        this.$router.push('/dashboard')
+                    }, 1500)
                 } catch (error) {
                     console.error('Login failed:', error)
-                } finally {
-                    this.loading = false
                 }
             }
         },
@@ -150,17 +190,10 @@ export default {
          */
         async handleGoogleLogin(response) {
             try {
-                console.log('Google login response:', response)
-                // Here you would:
-                // 1. Send the response.credential to your backend
-                // 2. Get your app's auth token back
-                // 3. Store it in your auth store/local storage
-                
-                // Redirect to dashboard
+                await this.googleAuth(response.credential)
                 this.$router.push('/dashboard')
             } catch (error) {
                 console.error('Google login failed:', error)
-                // Handle login error
             }
         }
     }
@@ -168,13 +201,13 @@ export default {
 </script>
 
 <style scoped>
-
 .auth-background {
     background: linear-gradient(135deg, var(--v-background-base) 0%, var(--v-surface-base) 100%);
     min-height: 100vh;
     position: relative;
     /* Added for absolute positioning of company brand */
 }
+
 .company-brand {
     position: absolute;
     top: 0;

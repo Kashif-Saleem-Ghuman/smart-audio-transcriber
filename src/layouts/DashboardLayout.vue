@@ -97,11 +97,12 @@
               value="logout"
               @click="handleLogout"
               color="error"
+              :loading="loading"
             >
               <template v-slot:prepend>
                 <v-icon icon="mdi-logout"></v-icon>
               </template>
-              <v-list-item-title>Logout</v-list-item-title>
+              <v-list-item-title>{{ loading ? 'Logging out...' : 'Logout' }}</v-list-item-title>
             </v-list-item>
           </v-list>
         </v-card>
@@ -121,6 +122,9 @@
  * @component DashboardLayout
  * @description Main layout component for the dashboard area
  */
+import { useAuthStore } from '@/stores/authStore'
+import { mapState, mapActions } from 'pinia'
+
 export default {
   name: 'DashboardLayout',
 
@@ -168,10 +172,14 @@ export default {
         .map(word => word[0])
         .join('')
         .toUpperCase()
-    }
+    },
+
+    ...mapState(useAuthStore, ['loading'])
   },
 
   methods: {
+    ...mapActions(useAuthStore, ['logout']),
+
     handleDrawerClick() {
       if (this.isRail && !this.isMobile) {
         this.isRail = false
@@ -209,9 +217,12 @@ export default {
      * @returns {Promise<void>}
      */
     async handleLogout() {
-      // Implement logout logic here
-      this.userMenu = false
-      await this.$router.push('/login')
+      try {
+        await this.logout()
+        this.$router.push('/login')
+      } catch (error) {
+        console.error('Logout failed:', error)
+      }
     }
   }
 }

@@ -4,32 +4,31 @@
  * Automatic routes for `./src/pages/*.vue`
  */
 
-// Composables
 import { createRouter, createWebHistory } from 'vue-router'
-import LoginForm from '@/components/LoginForm.vue'
-import SignupForm from '@/components/SignupForm.vue'
-import DashboardLayout from '@/layouts/DashboardLayout.vue'
-import DashboardHome from '@/views/DashboardHome.vue'
-import UploadAudio from '@/views/UploadAudio.vue'
+import { useAuthStore } from '@/stores/authStore'
 
 const routes = [
   {
     path: '/',
-    redirect: '/dashboard'
+    redirect: '/dashboard',
+    meta: { requiresAuth: true }
   },
   {
     path: '/login',
     name: 'Login',
-    component: LoginForm
+    component: () => import('@/components/LoginForm.vue'),
+    meta: { requiresGuest: true }
   },
   {
     path: '/signup',
     name: 'Signup',
-    component: SignupForm
+    component: () => import('@/components/SignupForm.vue'),
+    meta: { requiresGuest: true }
   },
   {
     path: '/dashboard',
-    component: DashboardLayout,
+    component: () => import('@/layouts/DashboardLayout.vue'),
+    meta: { requiresAuth: true },
     children: [
       {
         path: '',
@@ -38,15 +37,18 @@ const routes = [
       {
         path: 'upload',
         name: 'Upload',
-        component: UploadAudio
+        component: () => import('@/views/UploadAudio.vue')
       },
       {
         path: 'listing',
         name: 'Listing',
-        component: DashboardHome
+        component: () => import('@/views/DashboardHome.vue')
       }
-    ],
-    meta: { requiresAuth: true }
+    ]
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/dashboard'
   }
 ]
 
@@ -56,20 +58,35 @@ const router = createRouter({
 })
 
 // Navigation guard
-// router.beforeEach((to, from, next) => {
-//   // Check if route requires auth
-//   if (to.matched.some(record => record.meta.requiresAuth)) {
-//     // Check if user is logged in
-//     const isLoggedIn = localStorage.getItem('user') // Implement your auth check
-    
-//     if (!isLoggedIn) {
-//       next('/login')
-//     } else {
-//       next()
-//     }
-//   } else {
-//     next()
-//   }
-// })
+router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore()
+  const isAuthenticated = authStore.isAuthenticated
+
+  // Routes that require authentication
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    if (!isAuthenticated) {
+      next({
+        path: '/login',
+        query: { redirect: to.fullPath }
+      })
+    } else {
+      next()
+    }
+  }
+  
+  // Routes that require guest access (login, signup)
+  else if (to.matched.some(record => record.meta.requiresGuest)) {
+    if (isAuthenticated) {
+      next('/dashboard')
+    } else {
+      next()
+    }
+  }
+  
+  // Public routes
+  else {
+    next()
+  }
+})
 
 export default router

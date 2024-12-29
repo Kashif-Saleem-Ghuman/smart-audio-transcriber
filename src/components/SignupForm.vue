@@ -36,6 +36,44 @@
                                 </v-divider>
                             </div>
 
+                            <v-alert
+                                v-if="successMessage"
+                                type="success"
+                                variant="tonal"
+                                closable
+                                :timeout="4000"
+                                class="mb-4"
+                                density="comfortable"
+                                border="start"
+                            >
+                                <div class="d-flex align-center">
+                                    <v-icon icon="mdi-check-circle" start class="me-3"></v-icon>
+                                    <div>
+                                        <div class="text-subtitle-1 font-weight-medium">Success</div>
+                                        <div class="text-body-2">{{ successMessage }}</div>
+                                    </div>
+                                </div>
+                            </v-alert>
+
+                            <v-alert
+                                v-if="error"
+                                type="error"
+                                variant="tonal"
+                                closable
+                                :timeout="4000"
+                                class="mb-4"
+                                density="comfortable"
+                                border="start"
+                            >
+                                <div class="d-flex align-center">
+                                    <v-icon icon="mdi-alert-circle" start class="me-3"></v-icon>
+                                    <div>
+                                        <div class="text-subtitle-1 font-weight-medium">Registration Failed</div>
+                                        <div class="text-body-2">{{ error }}</div>
+                                    </div>
+                                </div>
+                            </v-alert>
+
                             <v-form @submit.prevent="handleSubmit" v-model="isFormValid" ref="signupForm">
                                 <v-text-field v-model="formData.firstName" label="First Name"
                                     :rules="validationRules.requiredRule" required prepend-inner-icon="mdi-account"
@@ -91,6 +129,8 @@
  * @description Handles new user registration with comprehensive user details
  */
 import { GoogleLogin } from 'vue3-google-login'
+import { useAuthStore } from '@/stores/authStore'
+import { mapState, mapActions } from 'pinia'
 
 export default {
     name: 'SignupForm',
@@ -159,7 +199,13 @@ export default {
         }
     },
 
+    computed: {
+        ...mapState(useAuthStore, ['loading', 'error', 'successMessage'])
+    },
+
     methods: {
+        ...mapActions(useAuthStore, ['register', 'login', 'googleAuth']),
+
         /**
          * Toggles password field visibility between text and password type
          * @returns {void}
@@ -179,19 +225,18 @@ export default {
 
             if (isValid) {
                 try {
-                    this.loading = true
-                    // Implement your signup logic here
-                    console.log('Signup attempt:', this.formData)
-
-                    // Simulate API call
-                    await new Promise(resolve => setTimeout(resolve, 1000))
-
-                    // On success, redirect to login
-                    this.$router.push('/login')
+                    await this.register({
+                        name: `${this.formData.firstName} ${this.formData.lastName}`,
+                        email: this.formData.email,
+                        password: this.formData.password
+                    })
+                    
+                    // Wait for a moment to show the success message
+                    setTimeout(() => {
+                        this.$router.push('/login')
+                    }, 2000)
                 } catch (error) {
                     console.error('Signup failed:', error)
-                } finally {
-                    this.loading = false
                 }
             }
         },
@@ -204,18 +249,10 @@ export default {
          */
         async handleGoogleSignup(response) {
             try {
-                console.log('Google signup response:', response)
-                // Here you would:
-                // 1. Send the response.credential to your backend
-                // 2. Create a new user account if needed
-                // 3. Get your app's auth token back
-                // 4. Store it in your auth store/local storage
-                
-                // Redirect to dashboard
+                await this.googleAuth(response.credential)
                 this.$router.push('/dashboard')
             } catch (error) {
                 console.error('Google signup failed:', error)
-                // Handle signup error
             }
         }
     }
