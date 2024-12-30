@@ -135,8 +135,6 @@ export default {
       isMobile: false,
       userMenu: false,
       companyLogo: '/path/to/your/logo.png',
-      userName: 'John Doe',
-      userEmail: 'john@example.com',
       menuItems: [
         {
           title: 'Listing',
@@ -167,14 +165,22 @@ export default {
      * @returns {string}
      */
     userInitials() {
-      return this.userName
+      return (this.user?.user?.name || '')
         .split(' ')
         .map(word => word[0])
         .join('')
         .toUpperCase()
     },
 
-    ...mapState(useAuthStore, ['loading'])
+    ...mapState(useAuthStore, ['loading', 'user']),
+
+    userName() {
+      return this.user?.user?.name || 'User'
+    },
+
+    userEmail() {
+      return this.user?.user?.email || 'user@example.com'
+    }
   },
 
   methods: {
