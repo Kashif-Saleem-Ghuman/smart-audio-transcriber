@@ -6,6 +6,13 @@
   </v-app>
 </template>
 
-<script setup>
+<script>
   //
 </script>
+
+<style>
+/* Custom class for centered alert icon */
+.alert-icon-centered .v-alert__prepend {
+    align-self: center !important;
+}
+</style>

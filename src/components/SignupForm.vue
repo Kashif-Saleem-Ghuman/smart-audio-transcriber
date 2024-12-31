@@ -3,7 +3,6 @@
         
             <div class="d-flex align-center company-brand pa-4">
                 <div>
-
                     <v-img
                     src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIyMCIgZmlsbD0iIzI1NjNlYiIvPjxwYXRoIGQ9Ik0xMiAyMGgxNk0yMCAxMnYxNiIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI0Ii8+PC9zdmc+"
                     width="32" height="32" class="me-2" contain />
@@ -42,7 +41,7 @@
                                 :type="error ? 'error' : 'success'"
                                 variant="tonal"
                                 closable
-                                class="mb-4"
+                                class="mb-4 alert-icon-centered "
                                 border="start"
                                 :text="error || successMessage"
                                 density="comfortable"
@@ -271,10 +270,7 @@ export default {
     min-height: calc(100vh - 80px); /* Adjust for company brand height */
 }
 
-.company-brand {
-    background: white;
-    width: 100%;
-}
+
 
 .auth-card {
     border: 1px solid #e2e8f0;

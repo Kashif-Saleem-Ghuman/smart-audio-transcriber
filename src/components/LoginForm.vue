@@ -4,7 +4,7 @@
             <div class="d-flex align-center">
                 <v-img
                     src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIyMCIgZmlsbD0iIzI1NjNlYiIvPjxwYXRoIGQ9Ik0xMiAyMGgxNk0yMCAxMnYxNiIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI0Ii8+PC9zdmc+"
-                    width="40" height="40" class="me-3" contain />
+                    width="32" height="32" class="me-2" contain />
                 <span class="text-h6 font-weight-bold text-primary">Company Name</span>
             </div>
         </div>
@@ -36,8 +36,7 @@
                                 :type="error ? 'error' : 'success'"
                                 variant="tonal"
                                 closable
-                                :timeout="4000"
-                                class="mb-4"
+                                class="mb-4 alert-icon-centered"
                                 density="comfortable"
                                 border="start"
                                 :text="error || successMessage"
