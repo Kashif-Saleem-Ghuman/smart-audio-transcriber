@@ -1,38 +1,39 @@
 <template>
     <div>
-        <div class="company-brand pa-4">
-            <div class="d-flex align-center">
-                <v-img
+        
+            <div class="d-flex align-center company-brand pa-4">
+                <div>
+
+                    <v-img
                     src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIyMCIgZmlsbD0iIzI1NjNlYiIvPjxwYXRoIGQ9Ik0xMiAyMGgxNk0yMCAxMnYxNiIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI0Ii8+PC9zdmc+"
-                    width="40" height="40" class="me-3" contain />
-                <span class="text-h6 font-weight-bold text-primary">Company Name</span>
+                    width="32" height="32" class="me-2" contain />
+                </div>
+                <span class="text-h6 text-sm-h5 font-weight-bold text-primary">Company Name</span>
             </div>
-        </div>
-        <v-container class="fill-height auth-background">
-            <!-- Company Logo and Name in top left -->
+        
 
-
+        <v-container class="fill-height auth-background pt-0">
             <v-row justify="center" align="center">
                 <v-col cols="12" sm="8" md="6" lg="4">
-                    <div class="text-center mb-6">
-                        <h1 class="text-h4 font-weight-bold text-primary mb-2">
+                    <div class="text-center mb-4">
+                        <h1 class="text-h5 text-sm-h4 font-weight-bold text-primary mb-1">
                             Create Account
                         </h1>
-                        <p class="text-body-1 text-medium-emphasis">
+                        <p class="text-body-2 text-medium-emphasis">
                             Fill in your details to get started
                         </p>
                     </div>
 
                     <v-card class="pa-4 auth-card">
                         <v-card-text>
-                            <!-- Add Google Sign Up Button -->
+                            <!-- Google Sign Up Button -->
                             <div class="d-flex justify-center mb-4">
                                 <GoogleLogin :callback="handleGoogleSignup" />
                             </div>
 
                             <div class="text-center my-4">
-                                <v-divider class="my-4">
-                                    <span class="text-medium-emphasis">OR</span>
+                                <v-divider class="my-3">
+                                    <span class="text-body-2 text-medium-emphasis">OR</span>
                                 </v-divider>
                             </div>
 
@@ -44,45 +45,69 @@
                                 class="mb-4"
                                 border="start"
                                 :text="error || successMessage"
+                                density="comfortable"
                             >
                             </v-alert>
 
                             <v-form @submit.prevent="handleSubmit" v-model="isFormValid" ref="signupForm">
-                                <v-text-field v-model="formData.firstName" label="First Name"
-                                    :rules="validationRules.requiredRule" required prepend-inner-icon="mdi-account"
-                                    class="mb-3" />
+                                <v-text-field 
+                                    v-model="formData.firstName" 
+                                    label="First Name"
+                                    :rules="validationRules.requiredRule" 
+                                    required 
+                                    prepend-inner-icon="mdi-account"
+                                    density="comfortable"
+                                    class="mb-2" 
+                                />
 
-                                <v-text-field v-model="formData.lastName" label="Last Name"
-                                    :rules="validationRules.requiredRule" required prepend-inner-icon="mdi-account"
-                                    class="mb-3" />
+                                <v-text-field 
+                                    v-model="formData.lastName" 
+                                    label="Last Name"
+                                    :rules="validationRules.requiredRule" 
+                                    required 
+                                    prepend-inner-icon="mdi-account"
+                                    density="comfortable"
+                                    class="mb-2" 
+                                />
 
-                                <v-text-field v-model="formData.email" label="Email" type="email"
-                                    :rules="validationRules.emailRules" required prepend-inner-icon="mdi-email"
-                                    class="mb-3" />
+                                <v-text-field 
+                                    v-model="formData.email" 
+                                    label="Email" 
+                                    type="email"
+                                    :rules="validationRules.emailRules" 
+                                    required 
+                                    prepend-inner-icon="mdi-email"
+                                    density="comfortable"
+                                    class="mb-2" 
+                                />
 
-                                <v-text-field v-model="formData.password" label="Password"
-                                    :type="showPassword ? 'text' : 'password'" :rules="validationRules.passwordRules"
-                                    required prepend-inner-icon="mdi-lock"
+                                <v-text-field 
+                                    v-model="formData.password" 
+                                    label="Password"
+                                    :type="showPassword ? 'text' : 'password'" 
+                                    :rules="validationRules.passwordRules"
+                                    required 
+                                    prepend-inner-icon="mdi-lock"
                                     :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
-                                    @click:append-inner="togglePassword" class="mb-3" />
+                                    @click:append-inner="togglePassword" 
+                                    density="comfortable"
+                                    class="mb-4" 
+                                />
 
-                                <!-- <v-select v-model="formData.country" :items="countries" label="Country"
-                                    :rules="validationRules.requiredRule" required prepend-inner-icon="mdi-earth"
-                                    class="mb-3" />
-
-                                <v-text-field v-model="formData.phone" label="Phone Number" type="tel"
-                                    :rules="validationRules.phoneRules" required prepend-inner-icon="mdi-phone"
-                                    class="mb-6" /> -->
-
-                                <v-btn color="primary" block type="submit" :loading="loading" :disabled="!isFormValid"
-                                    class="mb-4">
+                                <v-btn 
+                                    color="primary" 
+                                    block 
+                                    type="submit" 
+                                    :loading="loading" 
+                                    :disabled="!isFormValid"
+                                    class="mb-3"
+                                >
                                     Create Account
                                 </v-btn>
 
                                 <div class="text-center text-body-2">
                                     Already have an account?
-                                    <router-link to="/login"
-                                        class="font-weight-medium text-primary text-decoration-none">
+                                    <router-link to="/login" class="font-weight-medium text-primary text-decoration-none">
                                         Sign in instead
                                     </router-link>
                                 </div>
@@ -93,7 +118,6 @@
             </v-row>
         </v-container>
     </div>
-
 </template>
 
 <script>
@@ -173,10 +197,17 @@ export default {
     },
 
     computed: {
+        /**
+         * Maps loading, error, and successMessage states from the auth store
+         * @returns {Object} Object containing loading state, error messages, and success messages
+         */
         ...mapState(useAuthStore, ['loading', 'error', 'successMessage'])
     },
 
     methods: {
+        /**
+         * Maps authentication actions from the auth store
+         */
         ...mapActions(useAuthStore, ['register', 'login', 'googleAuth']),
 
         /**
@@ -215,10 +246,12 @@ export default {
         },
 
         /**
-         * Handles Google signup
+         * Handles Google signup authentication
          * @async
-         * @param {Object} response - Google OAuth response
+         * @param {Object} response - Google OAuth response object
+         * @param {string} response.credential - Google OAuth credential token
          * @returns {Promise<void>}
+         * @throws {Error} When Google authentication fails
          */
         async handleGoogleSignup(response) {
             try {
@@ -235,16 +268,12 @@ export default {
 <style scoped>
 .auth-background {
     background: linear-gradient(135deg, var(--v-background-base) 0%, var(--v-surface-base) 100%);
-    min-height: 100vh;
-    position: relative;
-    /* Added for absolute positioning of company brand */
+    min-height: calc(100vh - 80px); /* Adjust for company brand height */
 }
 
 .company-brand {
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 1;
+    background: white;
+    width: 100%;
 }
 
 .auth-card {
@@ -253,20 +282,43 @@ export default {
     backdrop-filter: blur(10px);
 }
 
-:deep(.v-field) {
-    border-radius: 12px;
-}
+/* Mobile Responsive Styles */
+@media (max-width: 600px) {
+    .company-brand {
+        padding: 12px !important;
+    }
 
-:deep(.v-field__outline__start) {
-    border-radius: 12px 0 0 12px;
-}
+    .company-brand .v-img {
+        width: 28px !important;
+        height: 28px !important;
+    }
 
-:deep(.v-field__outline__end) {
-    border-radius: 0 12px 12px 0;
-}
+    :deep(.text-h4) {
+        font-size: 1.5rem !important;
+    }
 
-:deep(.v-btn) {
-    text-transform: none;
-    letter-spacing: 0.5px;
+    :deep(.text-h5) {
+        font-size: 1.25rem !important;
+    }
+
+    :deep(.text-h6) {
+        font-size: 1rem !important;
+    }
+
+    :deep(.text-body-2) {
+        font-size: 0.875rem !important;
+    }
+
+    :deep(.v-card-text) {
+        padding: 16px 12px;
+    }
+
+    .auth-card {
+        margin: 0 8px;
+    }
+
+    :deep(.v-text-field) {
+        margin-bottom: 12px !important;
+    }
 }
 </style>

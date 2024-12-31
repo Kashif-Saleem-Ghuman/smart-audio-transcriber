@@ -121,10 +121,17 @@ export default {
     },
 
     computed: {
+        /**
+         * Maps loading, error, and successMessage states from the auth store
+         * @returns {Object} Object containing loading state, error messages, and success messages
+         */
         ...mapState(useAuthStore, ['loading', 'error', 'successMessage'])
     },
 
     methods: {
+        /**
+         * Maps authentication actions from the auth store
+         */
         ...mapActions(useAuthStore, ['login', 'googleAuth']),
 
         /**
@@ -158,14 +165,15 @@ export default {
         },
 
         /**
-         * Handles Google login
+         * Handles Google login authentication
          * @async
+         * @param {Object} response - Google OAuth response object
+         * @param {string} response.credential - Google OAuth credential token
          * @returns {Promise<void>}
          * @throws {Error} When Google login fails
          */
         async handleGoogleLogin(response) {
             try {
-                console.log("response google::",response)
                 await this.googleAuth(response.credential)
                 this.$router.push('/dashboard')
             } catch (error) {
@@ -181,7 +189,6 @@ export default {
     background: linear-gradient(135deg, var(--v-background-base) 0%, var(--v-surface-base) 100%);
     min-height: 100vh;
     position: relative;
-    /* Added for absolute positioning of company brand */
 }
 
 .company-brand {
@@ -207,5 +214,45 @@ export default {
 :deep(.v-btn) {
     text-transform: none;
     letter-spacing: 0.5px;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 600px) {
+    .company-brand {
+        padding: 12px !important;
+    }
+
+    .company-brand .v-img {
+        width: 28px !important;
+        height: 28px !important;
+    }
+
+    :deep(.text-h4) {
+        font-size: 1.5rem !important;
+    }
+
+    :deep(.text-h5) {
+        font-size: 1.25rem !important;
+    }
+
+    :deep(.text-h6) {
+        font-size: 1rem !important;
+    }
+
+    :deep(.text-body-2) {
+        font-size: 0.875rem !important;
+    }
+
+    :deep(.v-card-text) {
+        padding: 16px 12px;
+    }
+
+    .auth-card {
+        margin: 0 8px;
+    }
+
+    :deep(.v-text-field) {
+        margin-bottom: 12px !important;
+    }
 }
 </style>

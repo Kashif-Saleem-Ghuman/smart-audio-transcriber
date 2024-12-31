@@ -1,15 +1,16 @@
 <template>
     <v-container>
         <!-- Header Section -->
-        <div class="d-flex align-center justify-space-between mb-6">
-            <div>
-                <h1 class="text-h4 font-weight-bold mb-1">Audio Files</h1>
-                <p class="text-body-1 text-medium-emphasis">
+        <div class="d-flex flex-wrap align-center justify-space-between mb-6">
+            <div class="mb-3 mb-sm-0">
+                <h1 class="text-h5 text-sm-h4 font-weight-bold mb-1">Audio Files</h1>
+                <p class="text-body-2 text-sm-body-1 text-medium-emphasis">
                     Manage and review your transcribed audio files
                 </p>
             </div>
 
-            <v-btn color="primary" prepend-icon="mdi-upload" @click="$router.push('/dashboard/upload')">
+            <v-btn color="primary" prepend-icon="mdi-upload" @click="$router.push('/dashboard/upload')"
+                class="w-100 w-sm-auto">
                 Upload New
             </v-btn>
         </div>
@@ -17,23 +18,27 @@
         <!-- Search and Filter Section -->
         <v-card class="mb-6">
             <v-card-text>
-                <v-row>
-                    <v-col cols="12" sm="4">
-                        <v-text-field v-model="search" prepend-inner-icon="mdi-magnify" label="Search files" density="comfortable" variant="outlined" hide-details />
+                <v-row dense>
+                    <v-col cols="12" sm="4" class="pb-2">
+                        <v-text-field v-model="search" prepend-inner-icon="mdi-magnify" label="Search files"
+                            density="comfortable" variant="outlined" hide-details />
                     </v-col>
-                    <v-col cols="12" sm="4">
-                        <v-select v-model="dateFilter" :items="dateFilters" label="Date Range" density="comfortable" variant="outlined" hide-details />
+                    <v-col cols="12" sm="4" class="pb-2">
+                        <v-select v-model="dateFilter" :items="dateFilters" label="Date Range" density="comfortable"
+                            variant="outlined" hide-details />
                     </v-col>
-                    <v-col cols="12" sm="4">
-                        <v-select v-model="sortBy" :items="sortOptions" label="Sort by" density="comfortable" variant="outlined" hide-details />
+                    <v-col cols="12" sm="4" class="pb-2">
+                        <v-select v-model="sortBy" :items="sortOptions" label="Sort by" density="comfortable"
+                            variant="outlined" hide-details />
                     </v-col>
                 </v-row>
             </v-card-text>
         </v-card>
 
-        <!-- Table Section -->
+        <!-- Table Section - Add mobile responsive classes -->
         <v-card>
-            <v-data-table :headers="headers" :items="filteredAudioFiles" :loading="loading" :search="search">
+            <v-data-table :headers="headers" :items="filteredAudioFiles" :loading="loading" :search="search"
+                class="elevation-1" density="comfortable" :mobile-breakpoint="0">
                 <!-- Name Column with Status Icon -->
                 <template v-slot:item.name="{ item }">
                     <div class="d-flex align-center">
@@ -70,14 +75,13 @@
                 <template v-slot:item.actions="{ item }">
                     <v-btn icon="mdi-play" size="small" color="primary" variant="text" @click="playAudio(item)"
                         :disabled="!item.url || currentlyPlaying === item.id" />
-                    <v-btn icon="mdi-text" size="small" color="primary" variant="text"
-                        @click="viewTranscript(item)" :disabled="item.status !== 'completed'" />
-                    <v-btn icon="mdi-robot" size="small" color="primary" variant="text"
-                        @click="openPromptDialog(item)" :disabled="item.status !== 'completed'" />
-                    <v-btn icon="mdi-download" size="small" color="primary" variant="text"
-                        @click="downloadAudio(item)" :disabled="!item.url" />
-                    <v-btn icon="mdi-delete" size="small" color="error" variant="text"
-                        @click="confirmDelete(item)" />
+                    <v-btn icon="mdi-text" size="small" color="primary" variant="text" @click="viewTranscript(item)"
+                        :disabled="item.status !== 'completed'" />
+                    <v-btn icon="mdi-robot" size="small" color="primary" variant="text" @click="openPromptDialog(item)"
+                        :disabled="item.status !== 'completed'" />
+                    <v-btn icon="mdi-download" size="small" color="primary" variant="text" @click="downloadAudio(item)"
+                        :disabled="!item.url" />
+                    <v-btn icon="mdi-delete" size="small" color="error" variant="text" @click="confirmDelete(item)" />
                 </template>
             </v-data-table>
         </v-card>
@@ -224,30 +228,33 @@ export default {
                     key: 'name',
                     align: 'start',
                     sortable: true,
+                    width: '40%'
                 },
                 {
                     title: 'Duration',
                     key: 'duration',
-                    align: 'center',
-                    sortable: true,
+                    align: 'start',
+                    sortable: true
                 },
                 {
                     title: 'Date',
                     key: 'date',
-                    align: 'center',
-                    sortable: true,
+                    align: 'start',
+                    sortable: true
                 },
                 {
                     title: 'Status',
                     key: 'status',
                     align: 'center',
                     sortable: true,
+                    width: '20%'
                 },
                 {
                     title: 'Actions',
                     key: 'actions',
                     align: 'end',
                     sortable: false,
+                    width: '20%'
                 },
             ],
 
@@ -275,18 +282,18 @@ export default {
                     url: 'https://www2.cs.uic.edu/~i101/SoundFiles/BabyElephantWalk60.wav', // Example public audio file
                     transcript: `Team Meeting - Q4 Planning
           
-Key Discussion Points:
-1. Revenue projections exceeded Q3 targets by 15%
-2. New product launch scheduled for March 2024
-3. Team restructuring planned for next quarter
+                    Key Discussion Points:
+                    1. Revenue projections exceeded Q3 targets by 15%
+                    2. New product launch scheduled for March 2024
+                    3. Team restructuring planned for next quarter
 
-Action Items:
-- Marketing team to prepare launch campaign
-- HR to finalize hiring plans
-- Finance to update Q1 2024 forecasts
+                    Action Items:
+                    - Marketing team to prepare launch campaign
+                    - HR to finalize hiring plans
+                    - Finance to update Q1 2024 forecasts
 
-Next Steps:
-Schedule follow-up meetings with individual departments to detail implementation plans.`
+                    Next Steps:
+                    Schedule follow-up meetings with individual departments to detail implementation plans.`
                 },
                 {
                     id: 2,
@@ -297,20 +304,20 @@ Schedule follow-up meetings with individual departments to detail implementation
                     url: 'https://www2.cs.uic.edu/~i101/SoundFiles/ImperialMarch60.wav',
                     transcript: `Client Presentation for Project Alpha
           
-Project Overview:
-- Timeline: 6 months
-- Budget: $500,000
-- Team size: 8 members
+                    Project Overview:
+                    - Timeline: 6 months
+                    - Budget: $500,000
+                    - Team size: 8 members
 
-Client Requirements:
-1. Mobile-first approach
-2. Integration with existing systems
-3. Real-time analytics dashboard
+                    Client Requirements:
+                    1. Mobile-first approach
+                    2. Integration with existing systems
+                    3. Real-time analytics dashboard
 
-Questions and Concerns:
-- Security compliance requirements
-- Data migration strategy
-- Support and maintenance plans`
+                    Questions and Concerns:
+                    - Security compliance requirements
+                    - Data migration strategy
+                    - Support and maintenance plans`
                 },
                 {
                     id: 3,
@@ -339,29 +346,29 @@ Questions and Concerns:
                     url: 'https://www2.cs.uic.edu/~i101/SoundFiles/CantinaBand60.wav',
                     transcript: `Weekly Team Stand-up
 
-Updates by Team:
-Frontend:
-- Completed user dashboard redesign
-- Working on performance optimizations
-- Next: Starting work on new features
+                Updates by Team:
+                Frontend:
+                - Completed user dashboard redesign
+                - Working on performance optimizations
+                - Next: Starting work on new features
 
-Backend:
-- API documentation updated
-- Database optimization complete
-- Next: Implementing new security features
+                Backend:
+                - API documentation updated
+                - Database optimization complete
+                - Next: Implementing new security features
 
-DevOps:
-- Successfully deployed v2.1.0
-- Monitoring systems upgraded
-- Next: Planning cloud migration
+                DevOps:
+                - Successfully deployed v2.1.0
+                - Monitoring systems upgraded
+                - Next: Planning cloud migration
 
-Blockers:
-- None reported
+                Blockers:
+                - None reported
 
-Action Items:
-- Review pull requests by EOD
-- Schedule security audit
-- Update sprint board`
+                Action Items:
+                - Review pull requests by EOD
+                - Schedule security audit
+                - Update sprint board`
                 }
             ],
             promptDialog: false,
@@ -380,6 +387,10 @@ Action Items:
     },
 
     computed: {
+        /**
+         * Filters and sorts the audio files based on selected date range and sort criteria
+         * @returns {Array} Filtered and sorted array of audio files
+         */
         filteredAudioFiles() {
             let files = [...this.audioFiles]
 
@@ -416,6 +427,11 @@ Action Items:
     },
 
     methods: {
+        /**
+         * Gets the color for the status chip based on file status
+         * @param {string} status - The status of the audio file ('completed', 'processing', 'error')
+         * @returns {string} Color name for the status chip
+         */
         getStatusColor(status) {
             switch (status) {
                 case 'completed':
@@ -429,6 +445,11 @@ Action Items:
             }
         },
 
+        /**
+         * Gets the icon name for the status based on file status
+         * @param {string} status - The status of the audio file ('completed', 'processing', 'error')
+         * @returns {string} Material Design icon name
+         */
         getStatusIcon(status) {
             switch (status) {
                 case 'completed':
@@ -442,6 +463,11 @@ Action Items:
             }
         },
 
+        /**
+         * Formats seconds into MM:SS format
+         * @param {number} seconds - Duration in seconds
+         * @returns {string} Formatted duration string
+         */
         formatDuration(seconds) {
             if (!seconds) return 'N/A'
             const minutes = Math.floor(seconds / 60)
@@ -449,16 +475,30 @@ Action Items:
             return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
         },
 
+        /**
+         * Formats date to localized date string
+         * @param {string} date - ISO date string
+         * @returns {string} Formatted date string
+         */
         formatDate(date) {
             if (!date) return 'N/A'
             return new Date(date).toLocaleDateString()
         },
 
+        /**
+         * Formats date to localized time string
+         * @param {string} date - ISO date string
+         * @returns {string} Formatted time string
+         */
         formatTime(date) {
             if (!date) return 'N/A'
             return new Date(date).toLocaleTimeString()
         },
 
+        /**
+         * Opens audio player dialog for the selected file
+         * @param {Object} file - Audio file object
+         */
         playAudio(file) {
             if (!file?.url) return
             this.selectedFile = file
@@ -466,16 +506,27 @@ Action Items:
             this.audioDialog = true
         },
 
+        /**
+         * Handles audio playback completion
+         */
         audioEnded() {
             this.currentlyPlaying = null
         },
 
+        /**
+         * Opens transcript dialog for the selected file
+         * @param {Object} file - Audio file object
+         */
         viewTranscript(file) {
             if (!file?.transcript || file.status !== 'completed') return
             this.selectedFile = file
             this.transcriptDialog = true
         },
 
+        /**
+         * Copies transcript text to clipboard
+         * @returns {Promise<void>}
+         */
         async copyTranscript() {
             if (this.selectedFile?.transcript) {
                 try {
@@ -488,6 +539,9 @@ Action Items:
             }
         },
 
+        /**
+         * Downloads transcript as a text file
+         */
         downloadTranscript() {
             if (!this.selectedFile?.transcript) return
 
@@ -502,17 +556,29 @@ Action Items:
             window.URL.revokeObjectURL(url)
         },
 
+        /**
+         * Opens audio file URL in new tab
+         * @param {Object} file - Audio file object
+         */
         downloadAudio(file) {
             if (!file?.url) return
             window.open(file.url, '_blank')
         },
 
+        /**
+         * Opens delete confirmation dialog
+         * @param {Object} file - Audio file object
+         */
         confirmDelete(file) {
             if (!file) return
             this.selectedFile = file
             this.deleteDialog = true
         },
 
+        /**
+         * Deletes the selected audio file
+         * @returns {Promise<void>}
+         */
         async deleteAudio() {
             if (!this.selectedFile) return
 
@@ -531,6 +597,10 @@ Action Items:
             }
         },
 
+        /**
+         * Opens AI prompt dialog and loads prompt history
+         * @param {Object} file - Audio file object
+         */
         openPromptDialog(file) {
             this.selectedFile = file
             this.promptDialog = true
@@ -538,6 +608,11 @@ Action Items:
             this.loadPromptHistory(file.id)
         },
 
+        /**
+         * Loads prompt history for a specific file
+         * @param {number} fileId - ID of the audio file
+         * @returns {Promise<void>}
+         */
         async loadPromptHistory(fileId) {
             // Simulate API call delay
             await new Promise(resolve => setTimeout(resolve, 500))
@@ -553,11 +628,11 @@ Action Items:
                     {
                         type: 'response',
                         content: `Summary of key points:
-1. Q4 revenue exceeded targets by 15%
-2. New product launch planned for March 2024
-3. Team restructuring in progress
-4. Marketing campaign needs preparation
-5. HR has pending hiring plans`,
+                        1. Q4 revenue exceeded targets by 15%
+                        2. New product launch planned for March 2024
+                        3. Team restructuring in progress
+                        4. Marketing campaign needs preparation
+                        5. HR has pending hiring plans`,
                         timestamp: new Date(Date.now() - 3590000)
                     },
                     {
@@ -568,10 +643,10 @@ Action Items:
                     {
                         type: 'response',
                         content: `Action Items:
-• Marketing team: Prepare launch campaign
-• HR: Finalize hiring plans
-• Finance: Update Q1 2024 forecasts
-• Schedule department follow-ups`,
+                        • Marketing team: Prepare launch campaign
+                        • HR: Finalize hiring plans
+                        • Finance: Update Q1 2024 forecasts
+                        • Schedule department follow-ups`,
                         timestamp: new Date(Date.now() - 2990000)
                     }
                 ],
@@ -597,20 +672,20 @@ Action Items:
                         type: 'response',
                         content: `Team Updates:
 
-Frontend Team:
-• Completed dashboard redesign
-• Working on performance
-• Planning new features
+                        Frontend Team:
+                        • Completed dashboard redesign
+                        • Working on performance
+                        • Planning new features
 
-Backend Team:
-• Updated API docs
-• Completed DB optimization
-• Planning security updates
+                        Backend Team:
+                        • Updated API docs
+                        • Completed DB optimization
+                        • Planning security updates
 
-DevOps Team:
-• Deployed v2.1.0
-• Upgraded monitoring
-• Planning cloud migration`,
+                        DevOps Team:
+                        • Deployed v2.1.0
+                        • Upgraded monitoring
+                        • Planning cloud migration`,
                         timestamp: new Date(Date.now() - 1790000)
                     }
                 ]
@@ -619,6 +694,10 @@ DevOps Team:
             this.promptHistory = mockHistories[fileId] || []
         },
 
+        /**
+         * Sends a new prompt to the AI and handles the response
+         * @returns {Promise<void>}
+         */
         async sendPrompt() {
             if (!this.newPrompt.trim()) return
 
@@ -690,5 +769,56 @@ audio {
 /* Add to your existing styles */
 :deep(.v-textarea textarea) {
     border-radius: 8px;
+}
+
+/* Add responsive styles */
+@media (max-width: 600px) {
+    :deep(.v-data-table) {
+        font-size: 14px;
+    }
+
+    :deep(.v-data-table .v-table__wrapper) {
+        overflow-x: auto;
+    }
+
+    .user-message {
+        margin-left: 8px;
+        margin-right: 24px;
+    }
+
+    .ai-message {
+        margin-right: 8px;
+        margin-left: 24px;
+    }
+}
+
+/* Add responsive table styles */
+@media (max-width: 600px) {
+    :deep(.v-data-table) {
+        /* Reduce overall table font size on mobile */
+        font-size: 14px;
+    }
+
+    /* Hide table header cells for hidden columns */
+    :deep(.v-data-table th[data-hidden="true"]),
+    :deep(.v-data-table td[data-hidden="true"]) {
+        display: none;
+    }
+
+    /* Adjust padding for visible cells */
+    :deep(.v-data-table td) {
+        padding: 8px !important;
+    }
+
+    /* Make the name column take more space on mobile */
+    :deep(.v-data-table td:first-child) {
+        max-width: 40%;
+    }
+
+    /* Compact action buttons */
+    :deep(.v-data-table .v-btn) {
+        margin: 0 2px;
+        padding: 0 4px;
+    }
 }
 </style>
