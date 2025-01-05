@@ -27,11 +27,17 @@
       </v-navigation-drawer>
 
       <!-- Main Chat Section -->
-      <v-col class="d-flex flex-column pa-0 chat-container">
+      <v-col class="d-flex flex-column pa-0 chat-container"
+        :class="this.$vuetify.display.smAndDown ? 'mobile-chat-container' : 'desktop-chat-container'"
+      >
         <!-- Mobile Menu Button -->
-        <v-app-bar v-if="isMobile" density="compact">
-          <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
-          <v-toolbar-title>Chat History</v-toolbar-title>
+        <v-app-bar v-if="isMobile" density="compact" elevation="0" class="mobile-app-bar bg-grey-lighten-4">
+          <v-app-bar-nav-icon @click="drawer = !drawer" color="primary"></v-app-bar-nav-icon>
+          <v-toolbar-title class="text-body-2 text-primary">
+            Chat History
+          </v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-btn icon="mdi-refresh" variant="text" size="small" color="primary"></v-btn>
         </v-app-bar>
 
         <!-- Chat Messages Area -->
@@ -60,7 +66,8 @@
         </div>
 
         <!-- Prompt Input Area -->
-        <div class="prompt-area px-6 mx-1 mb-6">
+        <div class="prompt-area px-6 mx-1 mb-6 mb-md-0"
+        >
           <v-row class="pa-2 bg-grey-lighten-2 rounded-lg">
             <v-col class="pa-2">
               <v-form @submit.prevent="sendMessage">
@@ -325,8 +332,22 @@ export default {
 
 <style scoped>
 .chat-container {
-  height: calc(100vh - 80px);
   position: relative;
+}
+
+.mobile-chat-container {
+  height: calc(100vh - 130px);
+}
+
+.desktop-chat-container {
+  height: calc(100vh - 110px);
+}
+
+.mobile-app-bar {
+  position: fixed !important;
+  left: 0;
+  right: 0;
+  z-index: 100;
 }
 
 .chat-messages {
@@ -337,7 +358,6 @@ export default {
   bottom: 120px;
   left: 0;
   right: 0;
-  padding-top: v-bind(isMobile ? "48px": "0");
   scroll-behavior: smooth;
 }
 
