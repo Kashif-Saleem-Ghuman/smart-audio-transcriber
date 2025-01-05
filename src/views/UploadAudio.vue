@@ -221,10 +221,11 @@ export default {
       const audioStore = useAudioStore();
       this.uploading = true;
       this.error = null;
-
       try {
         // Pass the array of files directly to the store method
-        await audioStore.uploadAudio("/audio-transcription", this.audioFiles);
+        await audioStore.addAudio(this.audioFiles, 'upload');
+
+        // await audioStore.uploadAudio("/audio-transcription", this.audioFiles);
 
         this.audioFiles = [];
         // Add success notification here if needed

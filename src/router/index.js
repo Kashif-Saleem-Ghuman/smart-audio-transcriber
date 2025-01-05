@@ -48,6 +48,11 @@ const routes = [
         path: 'extract-audio-from-youtube',
         name: 'ExtractAudioFromYoutube',
         component: () => import('@/views/ExtractAudioFromYoutube.vue')
+      },
+      {
+        path: 'transcribe-audio',
+        name: 'TranscribeAudio',
+        component: () => import('@/views/TranscribeAudio.vue')
       }
     ]
   },

@@ -154,6 +154,11 @@ export default {
           title: 'Extract Audio From Youtube',
           icon: 'mdi-youtube',
           path: '/dashboard/extract-audio-from-youtube'
+        },
+        {
+          title: 'Transcribe Audio',
+          icon: 'mdi-microphone',
+          path: '/dashboard/transcribe-audio'
         }
       ]
     }
