@@ -6,6 +6,7 @@
       :temporary="isMobile"
       :rail="isRail && !isMobile"
       @click="handleDrawerClick"
+      elevation="1"
     >
       <v-list-item
         :prepend-avatar="companyLogo"
@@ -37,7 +38,10 @@
       </v-list>
     </v-navigation-drawer>
 
-    <v-app-bar>
+    <v-app-bar
+      elevation="1"
+      position="sticky"
+    >
       <v-app-bar-nav-icon
         v-if="isMobile"
         variant="text"
@@ -109,8 +113,8 @@
       </v-menu>
     </v-app-bar>
 
-    <v-main class="bg-grey-lighten-3">
-      <v-container fluid>
+    <v-main class="bg-grey-lighten-3 overflow-y-auto">
+      <v-container fluid class="h-100 pa-4">
         <router-view></router-view>
       </v-container>
     </v-main>
@@ -142,9 +146,14 @@ export default {
           path: '/dashboard/listing'
         },
         {
-          title: 'Upload',
+          title: 'Upload Audio',
           icon: 'mdi-upload',
-          path: '/dashboard/upload'
+          path: '/dashboard/upload-audio'
+        },
+        {
+          title: 'Extract Audio From Youtube',
+          icon: 'mdi-youtube',
+          path: '/dashboard/extract-audio-from-youtube'
         }
       ]
     }
@@ -242,5 +251,19 @@ export default {
 .v-navigation-drawer ::v-deep .v-navigation-drawer__content::-webkit-scrollbar-thumb {
   background-color: rgba(0, 0, 0, 0.2);
   border-radius: 5px;
+}
+
+:deep(.v-main) {
+  height: 100vh;
+  overflow-y: auto;
+}
+
+:deep(.v-container) {
+  max-height: 100%;
+}
+
+#dashboard {
+  height: 100vh;
+  overflow: hidden;
 }
 </style> 

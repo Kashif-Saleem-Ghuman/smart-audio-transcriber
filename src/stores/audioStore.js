@@ -7,11 +7,14 @@ export const useAudioStore = defineStore('audio', {
   }),
 
   actions: {
-    // Upload audio file
-    uploadAudio(url, file) {
+    // Upload multiple audio files
+    uploadAudio(url, files) {
       const formData = new FormData()
-      formData.append('file', file)
-      
+      // Append each file with different field name
+      files.forEach((file, index) => {
+        formData.append(`file-${index}`, file)
+      })
+
       return uploadClient.post(url, formData, {
         timeout: 30000,
         responseType: 'json'

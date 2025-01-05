@@ -9,7 +9,7 @@
                 </p>
             </div>
 
-            <v-btn color="primary" prepend-icon="mdi-upload" @click="$router.push('/dashboard/upload')"
+            <v-btn color="primary" prepend-icon="mdi-upload" @click="$router.push('/dashboard/upload-audio')"
                 class="w-100 w-sm-auto">
                 Upload New
             </v-btn>

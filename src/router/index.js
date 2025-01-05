@@ -32,17 +32,22 @@ const routes = [
     children: [
       {
         path: '',
-        redirect: '/dashboard/upload'
+        redirect: '/dashboard/upload-audio'
       },
       {
-        path: 'upload',
-        name: 'Upload',
+        path: 'upload-audio',
+        name: 'UploadAudio',
         component: () => import('@/views/UploadAudio.vue')
       },
       {
         path: 'listing',
         name: 'Listing',
         component: () => import('@/views/DashboardHome.vue')
+      },
+      {
+        path: 'extract-audio-from-youtube',
+        name: 'ExtractAudioFromYoutube',
+        component: () => import('@/views/ExtractAudioFromYoutube.vue')
       }
     ]
   },
