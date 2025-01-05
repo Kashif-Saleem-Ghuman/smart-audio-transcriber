@@ -53,6 +53,11 @@ const routes = [
         path: 'transcribe-audio',
         name: 'TranscribeAudio',
         component: () => import('@/views/TranscribeAudio.vue')
+      },
+      {
+        path: 'process-transcriptions',
+        name: 'ProcessTranscriptions',
+        component: () => import('@/views/ProcessTranscriptions.vue')
       }
     ]
   },

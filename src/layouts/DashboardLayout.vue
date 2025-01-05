@@ -159,6 +159,11 @@ export default {
           title: 'Transcribe Audio',
           icon: 'mdi-microphone',
           path: '/dashboard/transcribe-audio'
+        },
+        {
+          title: 'Process Trasncriptions',
+          icon: 'mdi-file-document-outline',
+          path: '/dashboard/process-transcriptions'
         }
       ]
     }
