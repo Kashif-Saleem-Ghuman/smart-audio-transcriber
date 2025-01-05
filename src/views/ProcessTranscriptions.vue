@@ -37,22 +37,23 @@
         <!-- Chat Messages Area -->
         <div class="chat-messages">
           <v-col class="pa-4">
-            <!-- Chat messages container -->
             <div class="chat-messages-container">
-              <div
-                v-for="(message, index) in messages"
-                :key="index"
-                :class="[
-                  'message-wrapper',
-                  message.isUser ? 'user-message' : 'ai-message',
-                ]"
-              >
-                <div class="message-content">
-                  <div v-if="!message.isUser" class="ai-avatar">
-                    <v-icon size="30" color="primary">mdi-robot</v-icon>
-                  </div>
-                  <div class="message-text" v-html="message.content"></div>
+              <div v-for="(message, index) in messages" :key="index" 
+                   :class="['message-wrapper', message.isUser ? 'user-message' : 'ai-message']">
+                <div class="d-flex align-center mb-1">
+                  <v-avatar size="24" :color="message.isUser ? 'primary' : 'success'" class="me-2">
+                    <v-icon size="small" color="white">
+                      {{ message.isUser ? 'mdi-account' : 'mdi-robot' }}
+                    </v-icon>
+                  </v-avatar>
+                  <span class="text-caption text-medium-emphasis">
+                    {{ message.isUser ? 'You' : 'AI Assistant' }}
+                  </span>
+                  <span class="text-caption text-medium-emphasis ms-2">
+                    {{ formatTime(message.timestamp) }}
+                  </span>
                 </div>
+                <div class="text-body-1">{{ message.content }}</div>
               </div>
             </div>
           </v-col>
@@ -61,30 +62,82 @@
         <!-- Prompt Input Area -->
         <div class="prompt-area px-6 mx-1 mb-6">
           <v-row class="pa-2 bg-grey-lighten-2 rounded-lg">
-            <v-col>
-              <v-textarea
-                v-model="userPrompt"
-                rows="1"
-                auto-grow
-                variant="flat"
-                hide-details
-                placeholder="Type your message here..."
-                class="prompt-textarea"
-                density="comfortable"
-                max-rows="4"
-              >
-                <template v-slot:append>
+            <v-col class="pa-2">
+              <v-form @submit.prevent="sendMessage">
+                <v-textarea
+                  v-model="userPrompt"
+                  label="Enter your prompt"
+                  rows="1"
+                  auto-grow
+                  hide-details
+                  class="mb-2 prompt-textarea"
+                  :loading="processingPrompt"
+                  :disabled="processingPrompt"
+                  variant="flat"
+                  density="comfortable"
+                  max-rows="4"
+                ></v-textarea>
+                <div class="d-flex align-center">
+                  <div class="d-flex align-center gap-2">
+                    <v-tooltip text="Attach transcriptions to analyze" location="top">
+                      <template v-slot:activator="{ props }">
+                        <v-btn
+                          v-bind="props"
+                          variant="text"
+                          density="comfortable"
+                          icon="mdi-paperclip"
+                          size="small"
+                          color="primary"
+                          @click="openFileDialog"
+                        ></v-btn>
+                      </template>
+                    </v-tooltip>
+                  </div>
+                  <v-chip-group class="mx-4">
+                    <v-chip
+                      v-for="(suggestion, index) in promptSuggestions"
+                      :key="index"
+                      size="small"
+                      @click="userPrompt = suggestion"
+                    >
+                      {{ suggestion }}
+                    </v-chip>
+                  </v-chip-group>
+                  <v-spacer></v-spacer>
                   <v-btn
                     color="primary"
                     icon="mdi-send"
                     @click="sendMessage"
                     size="small"
+                    :loading="processingPrompt"
+                    :disabled="!userPrompt.trim()"
                   ></v-btn>
-                </template>
-              </v-textarea>
+                </div>
+              </v-form>
             </v-col>
           </v-row>
         </div>
+
+        <!-- File Selection Dialog -->
+        <v-dialog v-model="showFileDialog" max-width="500">
+          <v-card>
+            <v-card-title>Select Transcriptions</v-card-title>
+            <v-card-text>
+              <v-select
+                v-model="selectedTranscriptions"
+                :items="availableTranscriptions"
+                label="Select transcriptions"
+                multiple
+                chips
+              ></v-select>
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="primary" variant="text" @click="attachFiles">Attach</v-btn>
+              <v-btn color="grey" variant="text" @click="showFileDialog = false">Cancel</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
       </v-col>
     </v-row>
   </v-container>
@@ -115,41 +168,67 @@ export default {
         {
           content: "Hello! How can I help you today?",
           isUser: false,
+          timestamp: new Date(Date.now() - 3600000),
         },
         {
           content: "How is the weather in Pakistan?",
           isUser: true,
+          timestamp: new Date(Date.now() - 3500000),
         },
         {
           content:
             "The weather in Pakistan is generally hot and sunny, with temperatures ranging from 25°C to 35°C during the day. The weather is influenced by the monsoon season, which typically occurs from June to September. During this time, the country experiences heavy rainfall and thunderstorms. It is advisable to carry light clothing, sunglasses, and sunscreen when traveling to Pakistan.",
           isUser: false,
+          timestamp: new Date(Date.now() - 3400000),
         },
         {
           content: "What is the capital of Pakistan?",
           isUser: true,
+          timestamp: new Date(Date.now() - 3300000),
         },
         {
           content: "The capital of Pakistan is Islamabad.",
           isUser: false,
+          timestamp: new Date(Date.now() - 3200000),
         },
         {
           content: "What is the population of Pakistan?",
           isUser: true,
+          timestamp: new Date(Date.now() - 3100000),
         },
         {
           content:
             "The population of Pakistan is approximately 220 million people.",
           isUser: false,
+          timestamp: new Date(Date.now() - 3000000),
         },
         {
           content: "What is the official language of Pakistan?",
           isUser: true,
+          timestamp: new Date(Date.now() - 2900000),
         },
         {
           content: "The official language of Pakistan is Urdu.",
           isUser: false,
+          timestamp: new Date(Date.now() - 2800000),
         },
+      ],
+      showFileDialog: false,
+      selectedTranscriptions: [],
+      availableTranscriptions: [
+        { title: 'Interview_001.txt', value: 1 },
+        { title: 'Meeting_2024_01_15.txt', value: 2 },
+        { title: 'Conference_Call_Q4.txt', value: 3 },
+        { title: 'Customer_Feedback_Session.txt', value: 4 },
+      ],
+      processingPrompt: false,
+      promptSuggestions: [
+        'Summarize this transcript',
+        'Extract action items',
+        'List all participants',
+        'Generate meeting minutes',
+        'Identify key decisions',
+        'Translate to Spanish'
       ],
     };
   },
@@ -184,27 +263,44 @@ export default {
       }
     },
 
-    sendMessage() {
+    formatTime(date) {
+      if (!date) return '';
+      return new Date(date).toLocaleTimeString([], { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: true
+      });
+    },
+
+    async sendMessage() {
       if (!this.userPrompt.trim()) return;
 
-      // Add user message
+      this.processingPrompt = true;
+      
+      // Add user message with current timestamp
       this.messages.push({
         content: this.userPrompt,
         isUser: true,
+        timestamp: new Date(),
       });
 
-      // Clear input
+      // Store the prompt before clearing
+      const userPrompt = this.userPrompt;
       this.userPrompt = "";
 
-      // Simulate AI response (replace with actual API call)
-      setTimeout(() => {
+      try {
+        // Simulate AI response
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
         this.messages.push({
-          content:
-            "This is a simulated response from the AI. You would replace this with actual API response.",
+          content: "This is a simulated response to: " + userPrompt,
           isUser: false,
+          timestamp: new Date(),
         });
+      } finally {
+        this.processingPrompt = false;
         this.scrollToBottom();
-      }, 1000);
+      }
     },
 
     scrollToBottom() {
@@ -212,6 +308,16 @@ export default {
         const chatMessages = document.querySelector(".chat-messages");
         chatMessages.scrollTop = chatMessages.scrollHeight;
       }, 100);
+    },
+
+    openFileDialog() {
+      this.showFileDialog = true;
+    },
+
+    attachFiles() {
+      // Here you would handle the selected transcriptions
+      console.log('Selected transcriptions:', this.selectedTranscriptions);
+      this.showFileDialog = false;
     },
   },
 };
@@ -228,10 +334,9 @@ export default {
   overflow-y: auto;
   position: absolute;
   top: 0;
-  bottom: 140px; /* Reduced from 180px */
+  bottom: 120px;
   left: 0;
   right: 0;
-  /* Add padding to top if mobile app bar is present */
   padding-top: v-bind(isMobile ? "48px": "0");
   scroll-behavior: smooth;
 }
@@ -241,60 +346,77 @@ export default {
   bottom: 0;
   left: 0;
   right: 0;
-  /* Add subtle shadow to separate from chat */
   box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
 }
 
+.prompt-wrapper {
+  min-height: 40px;
+  position: relative;
+}
+
+.prompt-textarea {
+  flex-grow: 1;
+}
+
 .prompt-textarea :deep(.v-field__input) {
-  height: 40px !important; /* Reduced from 55px */
-  padding-top: 8px !important;
-  padding-bottom: 8px !important;
+  min-height: 24px !important;
+  padding: 4px 0 !important;
+}
+
+.prompt-textarea :deep(.v-field) {
+  --v-field-padding-bottom: 0 !important;
+  --v-field-padding-top: 0 !important;
+}
+
+.prompt-actions {
+  padding: 4px 0;
 }
 
 .chat-messages-container {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 .message-wrapper {
-  display: flex;
-  width: 100%;
-}
-
-.message-content {
-  display: flex;
-  gap: 1rem;
-  max-width: 80%;
+  padding: 1rem;
+  border-radius: 8px;
+  margin: 0 48px;
 }
 
 .user-message {
-  justify-content: flex-end;
+  background: #E3F2FD;
+  margin-left: 96px;
 }
 
-.user-message .message-content {
-  flex-direction: row-reverse;
+.ai-message {
+  background: white;
+  margin-right: 96px;
+  border: 1px solid #e0e0e0;
 }
 
-.message-text {
-  padding: 1rem;
-  font-size: 0.9375rem;
-  line-height: 1.4;
+.prompt-textarea :deep(.v-field__input) {
+  min-height: 24px !important;
+  padding: 4px 0 !important;
 }
 
-.user-message .message-text {
-  background-color: rgb(var(--v-theme-primary));
-  color: white;
-  border-radius: 8px;
+.prompt-textarea :deep(.v-field) {
+  --v-field-padding-bottom: 0 !important;
+  --v-field-padding-top: 0 !important;
 }
 
-.ai-message .message-text {
-  background: transparent;
-}
-
-.ai-avatar {
-  display: flex;
-  align-items: flex-start;
-  padding-top: 0.25rem;
+/* Add responsive styles */
+@media (max-width: 600px) {
+  .message-wrapper {
+    margin: 0 16px;
+  }
+  
+  .user-message {
+    margin-left: 32px;
+  }
+  
+  .ai-message {
+    margin-right: 32px;
+  }
 }
 </style>
