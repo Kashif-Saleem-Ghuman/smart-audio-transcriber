@@ -64,7 +64,6 @@
             </div>
           </v-col>
         </div>
-
         <!-- Prompt Input Area -->
         <div class="prompt-area px-6 mx-1 mb-6 mb-md-0"
         >

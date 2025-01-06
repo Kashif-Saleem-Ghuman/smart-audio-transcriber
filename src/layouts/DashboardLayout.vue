@@ -164,6 +164,11 @@ export default {
           title: 'Process Trasncriptions',
           icon: 'mdi-file-document-outline',
           path: '/dashboard/process-transcriptions'
+        },
+        {
+          title: 'Subscriptions',
+          icon: 'mdi-credit-card',
+          path: '/dashboard/subscriptions'
         }
       ]
     }

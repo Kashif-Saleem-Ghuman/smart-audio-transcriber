@@ -58,6 +58,11 @@ const routes = [
         path: 'process-transcriptions',
         name: 'ProcessTranscriptions',
         component: () => import('@/views/ProcessTranscriptions.vue')
+      },
+      {
+        path: 'subscriptions',
+        name: 'Subscriptions',
+        component: () => import('@/views/Subscriptions.vue')
       }
     ]
   },
