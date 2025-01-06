@@ -16,15 +16,18 @@ import * as directives from 'vuetify/directives'
 const customTheme = {
   dark: false,
   colors: {
-    primary: '#2563eb', // Modern blue
-    secondary: '#475569', // Slate gray
-    accent: '#0ea5e9', // Sky blue
-    success: '#22c55e',
-    error: '#ef4444',
-    warning: '#f59e0b',
-    info: '#3b82f6',
-    background: '#f8fafc',
-    surface: '#ffffff',
+    primary: '#2563eb', // Keep existing Modern blue
+    secondary: '#475569', // Keep existing Slate gray
+    accent: '#0ea5e9', // Keep existing Sky blue
+    success: '#22c55e', // Keep existing
+    error: '#ef4444', // Keep existing
+    warning: '#f59e0b', // Keep existing
+    info: '#3b82f6', // Keep existing
+    background: '#f8fafc', // Keep existing
+    surface: '#ffffff', // Keep existing
+    // Add new grays for specific UI elements
+    'surface-variant': '#F3F4F6', // Light gray for hover states
+    'border-color': '#E5E7EB', // Light gray for borders
   }
 }
 

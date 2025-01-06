@@ -1,139 +1,101 @@
 <template>
-  <v-container>
-    <v-row>
-      <v-col cols="12" md="8" class="mx-auto">
-        <!-- Error Alert -->
-        <v-alert
-          v-if="error"
-          type="error"
-          class="mb-4 alert-icon-centered"
-          closable
+  <v-container style="position: relative !important;">
+    <!-- Error Alert -->
+    <v-alert v-if="error" type="error" class="mb-4 alert-icon-centered" closable @click:close="error = null">
+      {{ error }}
+    </v-alert>
 
-          @click:close="error = null"
-        >
-          {{ error }}
-        </v-alert>
+    <!-- Upload Card -->
+    <v-card class="upload-zone mb-4" @drop.prevent="handleDrop" @dragover.prevent @dragenter="dragEnter"
+      @dragleave="dragLeave" :class="{ 'drag-over': isDragging }" elevation="0" border>
+      <v-card-text class="text-center pa-8">
+        <v-icon size="64" color="primary" class="mb-4">mdi-cloud-upload</v-icon>
+        <div class="text-h6 mb-2">
+          Drag and drop or
+          <span class="text-primary cursor-pointer" @click="triggerFileInput">browse</span>
+        </div>
+        <div class="text-body-2 text-medium-emphasis">
+          Supports MP3, WAV, M4A, and other audio formats
+        </div>
 
-        <!-- Upload Section -->
-        <v-card class="upload-card">
-          <v-card-title class="d-flex align-center py-4 px-6">
-            <v-icon
-              icon="mdi-upload"
-              :size="$vuetify.display.smAndDown ? '24' : '32'"
-              class="me-3"
-              color="primary"
-            />
-            <span
-              :class="
-                $vuetify.display.smAndDown
-                  ? 'text-subtitle-1 text-wrap'
-                  : 'text-h6'
-              "
-              class="font-weight-medium"
-              >Upload Audio Files</span
-            >
-          </v-card-title>
+        <!-- Hidden file input -->
+        <input ref="fileInput" type="file" multiple accept="audio/*" class="d-none" @change="handleFileChange" />
+      </v-card-text>
+    </v-card>
 
-          <v-card-text>
-            <v-file-input
-              :model-value="audioFiles"
-              multiple
-              accept="audio/*"
-              label="Choose audio files"
-              prepend-icon="mdi-music"
-              :rules="fileRules"
-              @update:model-value="handleFileChange"
-              class="mb-4 file-input"
-              :density="$vuetify.display.smAndDown ? 'compact' : 'default'"
-              chips
-              counter
-              variant="outlined"
-              :show-size="1000"
-            />
-
-            <div
-              class="upload-zone pa-8 mb-4"
-              @drop.prevent="handleDrop"
-              @dragover.prevent
-              @dragenter="dragEnter"
-              @dragleave="dragLeave"
-              :class="{ 'drag-over': isDragging }"
-            >
-              <div class="text-center">
-                <v-icon
-                  :size="$vuetify.display.smAndDown ? '48' : '64'"
-                  color="primary"
-                  class="mb-3"
-                  >mdi-cloud-upload</v-icon
-                >
-                <div
-                  :class="$vuetify.display.smAndDown ? 'text-h6' : 'text-h5'"
-                  class="mb-2"
-                >
-                  Drag and drop your audio files here
-                </div>
-                <div
-                  :class="
-                    $vuetify.display.smAndDown ? 'text-body-2' : 'text-body-1'
-                  "
-                  class="text-medium-emphasis"
-                >
-                  Supports MP3, WAV, M4A, and other audio formats
-                </div>
-                <div class="text-caption text-medium-emphasis mt-2">
-                  Maximum file size: 20MB
+    <!-- File List -->
+    <div class="upload-container pb-3">
+      <!-- File List with fixed height and scroll -->
+      <div v-if="audioFiles?.length" class="file-list">
+        <v-card v-for="(file, index) in audioFiles" :key="index" elevation="0" border class="mb-2">
+          <v-card-text class="pa-4">
+            <div class="d-flex align-center justify-space-between w-100">
+              <!-- File Icon and Name Group -->
+              <div class="d-flex align-center file-content">
+                <v-icon color="primary" size="24" class="me-3 flex-shrink-0">mdi-file-music</v-icon>
+                <div class="file-info min-width-0">
+                  <v-tooltip :text="file.name" location="top" open-on-hover
+                    :disabled="!isTextTruncated($refs[`filename-${index}`])">
+                    <template v-slot:activator="{ props }">
+                      <div class="text-subtitle-2 text-truncate" :ref="`filename-${index}`" v-bind="props">
+                        {{ file.name }}
+                      </div>
+                    </template>
+                  </v-tooltip>
+                  <span class="text-caption text-medium-emphasis">
+                    {{ (file.size / (1024 * 1024)).toFixed(2) }} MB
+                  </span>
                 </div>
               </div>
+
+              <!-- Close Button -->
+              <v-btn
+                icon="mdi-close"
+                variant="text"
+                density="comfortable"
+                color="error"
+                size="small"
+                @click="removeFile(index)"
+                :disabled="file.uploading"
+                class="ms-2 flex-shrink-0"
+              />
             </div>
 
-            <!-- File List -->
-            <v-slide-y-transition group>
-              <v-list
-                v-if="audioFiles?.length"
-                class="file-list mb-4"
-                variant="flat"
-              >
-                <v-list-item
-                  v-for="(file, index) in audioFiles"
-                  :key="index"
-                  class="file-item mb-2"
-                >
-                  <template v-slot:prepend>
-                    <v-icon color="primary">mdi-music-circle</v-icon>
-                  </template>
-                  <v-list-item-title>{{ file.name }}</v-list-item-title>
-                  <v-list-item-subtitle>
-                    {{ (file.size / (1024 * 1024)).toFixed(2) }} MB
-                  </v-list-item-subtitle>
-                  <template v-slot:append>
-                    <v-btn
-                      icon="mdi-close"
-                      variant="text"
-                      size="small"
-                      @click="removeFile(index)"
-                    />
-                  </template>
-                </v-list-item>
-              </v-list>
-            </v-slide-y-transition>
-
-            <v-btn
-              block
+            <!-- Progress Bar -->
+            <v-progress-linear
+              :model-value="88"
               color="primary"
-              :size="$vuetify.display.smAndDown ? 'small' : 'x-large'"
-              :loading="uploading"
-              :disabled="!audioFiles?.length"
-              @click="uploadFiles"
-              class="mt-4"
-              elevation="2"
-            >
-              <v-icon start class="me-2">mdi-cloud-upload</v-icon>
-              Upload Files
-            </v-btn>
+              height="2"
+              class="mt-3"
+            ></v-progress-linear>
           </v-card-text>
         </v-card>
-      </v-col>
-    </v-row>
+      </div>
+    </div>
+    <!-- Action Buttons in a fixed position -->
+    <div v-if="audioFiles?.length" class="action-buttons">
+      <v-btn 
+        variant="outlined" 
+        color="error" 
+        @click="clearFiles" 
+        :disabled="uploading" 
+        :block="isMobile"
+        :size="isMobile ? undefined : 'small'"
+        class="action-btn"
+      >
+        Cancel
+      </v-btn>
+      <v-btn 
+        color="primary" 
+        :loading="uploading" 
+        @click="uploadFiles" 
+        :block="isMobile"
+        :size="isMobile ? undefined : 'small'"
+        class="action-btn"
+      >
+        Add files
+      </v-btn>
+    </div>
   </v-container>
 </template>
 
@@ -149,6 +111,7 @@ export default {
       uploading: false,
       error: null,
       isDragging: false,
+      isMobile: false,
       fileRules: [
         (v) => {
           if (!v) return true;
@@ -160,9 +123,7 @@ export default {
             }
             const sizeInMB = file.size / (1024 * 1024);
             if (sizeInMB > 20) {
-              return `File ${file.name} (${sizeInMB.toFixed(
-                2
-              )}MB) exceeds 20MB limit`;
+              return `File ${file.name} (${sizeInMB.toFixed(2)}MB) exceeds 20MB limit`;
             }
           }
           return true;
@@ -171,19 +132,38 @@ export default {
     };
   },
 
+  mounted() {
+    // Initial check
+    this.checkMobile();
+    // Add resize listener
+    window.addEventListener('resize', this.checkMobile);
+  },
+
+  beforeUnmount() {
+    // Clean up
+    window.removeEventListener('resize', this.checkMobile);
+  },
+
   methods: {
-    handleFileChange(files) {
-      if (!files) {
-        this.audioFiles = [];
-        return;
-      }
+    checkMobile() {
+      this.isMobile = window.innerWidth < 600; // Matches Vuetify's mobile breakpoint
+    },
+
+    handleFileChange(event) {
+      const files = event.target.files;
+      if (!files) return;
+
       // Filter valid files
-      const validFiles = files.filter((file) => {
+      const validFiles = Array.from(files).filter((file) => {
         const sizeInMB = file.size / (1024 * 1024);
         return file.type.startsWith("audio/") && sizeInMB <= 20;
       });
+
       // Append new files to existing ones
       this.audioFiles = [...this.audioFiles, ...validFiles];
+
+      // Reset the input
+      event.target.value = "";
     },
 
     handleDrop(e) {
@@ -212,7 +192,13 @@ export default {
     },
 
     removeFile(index) {
-      this.audioFiles.splice(index, 1);
+      if (!this.audioFiles[index].uploading) {
+        this.audioFiles.splice(index, 1);
+      }
+    },
+
+    clearFiles() {
+      this.audioFiles = [];
     },
 
     async uploadFiles() {
@@ -236,52 +222,212 @@ export default {
         this.uploading = false;
       }
     },
+
+    triggerFileInput() {
+      this.$refs.fileInput.click();
+    },
+
+    isTextTruncated(element) {
+      if (!element) return false;
+      return element.scrollWidth > element.clientWidth;
+    },
   },
 };
 </script>
-
 <style scoped>
-.upload-card {
-  border-radius: 16px;
-  box-shadow: 0 4px 25px 0 rgba(0, 0, 0, 0.1);
-}
-
 .upload-zone {
-  border: 2px dashed var(--v-primary-base);
-  border-radius: 16px;
+  border: none;
+  background-image: repeating-linear-gradient(to right,
+      rgb(var(--v-theme-primary)) 0,
+      rgb(var(--v-theme-primary)) 12px,
+      transparent 8px,
+      transparent 16px),
+    repeating-linear-gradient(to bottom,
+      rgb(var(--v-theme-primary)) 0,
+      rgb(var(--v-theme-primary)) 12px,
+      transparent 8px,
+      transparent 16px),
+    repeating-linear-gradient(to right,
+      rgb(var(--v-theme-primary)) 0,
+      rgb(var(--v-theme-primary)) 12px,
+      transparent 8px,
+      transparent 16px),
+    repeating-linear-gradient(to bottom,
+      rgb(var(--v-theme-primary)) 0,
+      rgb(var(--v-theme-primary)) 12px,
+      transparent 8px,
+      transparent 16px);
+  background-position: 0 0, 0 0, 0 100%, 100% 0;
+  background-size: 100% 2px, 2px 100%, 100% 2px, 2px 100%;
+  background-repeat: no-repeat;
+  border-radius: 8px;
   transition: all 0.3s ease;
-  background-color: var(--v-background-base);
+  cursor: pointer;
 }
 
 .upload-zone.drag-over {
-  border-color: var(--v-primary-darken-1);
-  background-color: var(--v-primary-lighten-5);
-  transform: scale(1.01);
+  background-color: rgb(var(--v-theme-surface-variant));
+  border-style: dashed;
+  border-width: 2px;
+  /* Make dashes longer */
+  border-image: repeating-linear-gradient(to right,
+      rgb(var(--v-theme-primary)) 0,
+      rgb(var(--v-theme-primary)) 15px,
+      transparent 15px,
+      transparent 25px) 2;
 }
 
 .upload-zone:hover {
-  background-color: var(--v-primary-lighten-5);
+  background-color: rgb(var(--v-theme-surface-variant));
 }
 
-.file-input {
-  max-height: 150px;
-  overflow-y: auto;
-}
-
-.file-list {
-  border-radius: 12px;
-  background-color: var(--v-background-base);
-  overflow-y: auto;
-  max-height: 100px;
+.cursor-pointer {
+  cursor: pointer;
 }
 
 .file-item {
-  border-radius: 8px;
-  margin-bottom: 8px;
-  transition: all 0.2s ease;
+  border-bottom: 1px solid rgb(var(--v-theme-border-color));
 }
 
-.file-item:hover {
-  background-color: var(--v-primary-lighten-5);
+.file-item:last-child {
+  border-bottom: none;
+}
+
+.file-list {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.gap-2 {
+  gap: 8px;
+}
+
+:deep(.v-card-text) {
+  padding: 12px 16px !important;
+}
+
+:deep(.v-progress-linear) {
+  margin-bottom: -2px;
+}
+
+.text-truncate {
+  max-width: 300px;
+
+  @media (max-width: 600px) {
+    max-width: 200px;
+  }
+}
+
+.upload-container {
+  height: calc(100vh - 350px);
+  /* Adjust based on your layout */
+  display: flex;
+  flex-direction: column;
+}
+
+.file-list {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 70px;
+  /* Space for buttons */
+}
+
+.action-buttons {
+  position: absolute;
+  bottom: -50px;
+  right: 0;
+  padding: 16px 0;
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* Add smooth scrollbar styling */
+.file-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.file-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.file-list::-webkit-scrollbar-thumb {
+  background-color: rgba(var(--v-theme-primary), 0.1);
+  border-radius: 4px;
+}
+
+.file-list::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(var(--v-theme-primary), 0.2);
+}
+
+/* Ensure proper spacing */
+.v-card.mb-2:last-child {
+  margin-bottom: 0;
+}
+
+.file-content {
+  flex: 1;
+  min-width: 0;
+  margin-right: 8px;
+}
+
+.file-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Update mobile styles */
+@media (max-width: 600px) {
+  :deep(.v-card-text) {
+    padding: 12px !important;
+  }
+
+  .text-truncate {
+    max-width: calc(100vw - 120px);
+  }
+
+  /* Ensure close button stays visible */
+  .v-btn.v-btn--size-small {
+    min-width: 32px !important;
+    padding: 0 !important;
+  }
+
+  .file-content {
+    margin-right: 4px;
+  }
+}
+
+/* Update mobile styles for action buttons */
+@media (max-width: 600px) {
+  .action-buttons {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 0 16px 16px 16px;
+    z-index: 100;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .action-btn {
+    width: 100%;
+    height: 40px;
+  }
+
+  /* Adjust container padding to account for fixed buttons */
+  .upload-container {
+    height: calc(100vh - 360px);
+    padding-bottom: 80px;
+  }
+
+  /* Ensure content doesn't hide behind buttons */
+  .file-list {
+    padding-bottom: 100px;
+  }
 }
 </style>

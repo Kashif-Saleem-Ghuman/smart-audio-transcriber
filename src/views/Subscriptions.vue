@@ -54,10 +54,11 @@
 
             <!-- Price -->
             <div class="d-flex align-baseline mb-4">
-              <span class="text-h4 font-weight-bold"
-                >${{ getPlanPrice(plan) }}</span
-              >
-              <span class="text-subtitle-1 ml-1">/mo</span>
+              <span class="text-h4 font-weight-bold">
+                ${{ getPlanPrice(plan) }}
+              </span>
+              <span class="text-subtitle-1 ml-1" v-if="billingCycle === 'monthly'">/mo</span>
+              <span class="text-subtitle-1 ml-1" v-else>/year</span>
             </div>
 
             <v-card-actions class="pa-4">
@@ -197,9 +198,10 @@ export default {
   methods: {
     getPlanPrice(plan) {
       if (!plan) return 0;
-      return this.billingCycle === "yearly"
-        ? plan.yearlyPrice
-        : plan.monthlyPrice;
+      if (this.billingCycle === 'yearly') {
+        return (plan.yearlyPrice * 12).toFixed(0); // Multiply by 12 for yearly total
+      }
+      return plan.monthlyPrice;
     },
 
     selectPlan(plan) {

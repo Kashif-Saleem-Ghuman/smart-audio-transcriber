@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { uploadClient, apiClient } from '@/api/axios'
+// import axios from 'axios'
 
 export const useAudioStore = defineStore('audio', {
   state: () => ({
@@ -28,19 +29,40 @@ export const useAudioStore = defineStore('audio', {
 
   actions: {
     // State management actions
-    async addAudio(audioFiles, source) {
-        console.log("Adding audio files:", audioFiles);
-        audioFiles.forEach(file => {
-            this.audioFiles.push({
-                id: `audio-${Math.random().toString(36).substr(2, 9)}`,
-                title: file.name,
-                source: source, // 'upload' or 'youtube'
-                createdAt: new Date(),
-                status: 'ready', // ready, transcribing, completed, error
-                transcription: null,
-            });
-        });
+    async addAudio(audioFiles, source, config = {}) {
+      console.log("Adding audio files:", audioFiles);
+      audioFiles.forEach(file => {
+          this.audioFiles.push({
+              id: `audio-${Math.random().toString(36).substr(2, 9)}`,
+              title: file.name,
+              source: source, // 'upload' or 'youtube'
+              createdAt: new Date(),
+              status: 'ready', // ready, transcribing, completed, error
+              transcription: null,
+          });
+      });
     },
+    // async addAudio(files, source, config = {}) {
+    //   try {
+    //     // Simulate file upload with progress
+    //     for (const file of files) {
+    //       // Create FormData
+    //       const formData = new FormData();
+    //       formData.append('file', file);
+
+    //       // Make API call with progress tracking
+    //       await axios.post('/api/upload', formData, {
+    //         ...config,
+    //         headers: {
+    //           'Content-Type': 'multipart/form-data'
+    //         }
+    //       });
+    //     }
+    //   } catch (error) {
+    //     console.error('Upload failed:', error);
+    //     throw error;
+    //   }
+    // },
 
     updateAudioStatus(audioId, status) {
       const audio = this.audioFiles.find(a => a.id === audioId);

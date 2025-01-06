@@ -47,7 +47,7 @@
         variant="text"
         @click.stop="drawer = !drawer"
       ></v-app-bar-nav-icon>
-      <v-app-bar-title>Dashboard</v-app-bar-title>
+      <v-app-bar-title>{{ getPageTitle }}</v-app-bar-title>
       <v-spacer></v-spacer>
 
       <!-- User Menu -->
@@ -204,6 +204,10 @@ export default {
 
     userEmail() {
       return this.user?.user?.email || 'user@example.com'
+    },
+
+    getPageTitle() {
+      return this.$route.path === '/dashboard/upload-audio' ? 'Upload files' : 'Dashboard'
     }
   },
 
