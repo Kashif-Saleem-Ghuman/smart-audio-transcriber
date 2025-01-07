@@ -138,15 +138,24 @@
 </template>
 
 <script>
+/**
+ * @component Subscriptions
+ * @description Subscription plans management component with billing cycle options
+ */
 export default {
   name: "Subscriptions",
 
   data() {
     return {
+      /** @type {'yearly'|'monthly'} Billing cycle selection */
       billingCycle: "yearly",
+      /** @type {boolean} Dialog visibility state */
       showConfirmDialog: false,
+      /** @type {Object|null} Currently selected plan */
       selectedPlan: null,
+      /** @type {boolean} Processing state for subscription actions */
       processing: false,
+      /** @type {Array<Object>} Available subscription plans */
       plans: [
         {
           name: "Essential",
@@ -196,25 +205,40 @@ export default {
   },
 
   methods: {
+    /**
+     * Calculates the price for a plan based on billing cycle
+     * @param {Object} plan - The subscription plan object
+     * @param {number} plan.monthlyPrice - Monthly price of the plan
+     * @param {number} plan.yearlyPrice - Yearly price of the plan
+     * @returns {number} Calculated price based on billing cycle
+     */
     getPlanPrice(plan) {
       if (!plan) return 0;
       if (this.billingCycle === 'yearly') {
-        return (plan.yearlyPrice * 12).toFixed(0); // Multiply by 12 for yearly total
+        return (plan.yearlyPrice * 12).toFixed(0);
       }
       return plan.monthlyPrice;
     },
 
+    /**
+     * Sets the selected plan and opens confirmation dialog
+     * @param {Object} plan - The subscription plan to select
+     */
     selectPlan(plan) {
       this.selectedPlan = plan;
       this.showConfirmDialog = true;
     },
 
+    /**
+     * Handles subscription confirmation process
+     * Simulates API call for subscription processing
+     * @returns {Promise<void>}
+     */
     async confirmSubscription() {
       this.processing = true;
       try {
         // Simulate API call
         await new Promise((resolve) => setTimeout(resolve, 1500));
-        // Handle successful subscription
         this.showConfirmDialog = false;
         // TODO: Show success notification
       } catch (error) {

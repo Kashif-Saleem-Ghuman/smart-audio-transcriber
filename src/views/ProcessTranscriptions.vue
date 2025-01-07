@@ -150,15 +150,24 @@
 </template>
 
 <script>
+/**
+ * @component ProcessTranscriptions
+ * @description Handles transcription processing and AI chat interactions
+ */
 export default {
   name: "ProcessTranscriptions",
 
   data() {
     return {
+      /** @type {boolean} Navigation drawer state */
       drawer: true,
+      /** @type {boolean} Rail navigation state */
       isRail: false,
+      /** @type {boolean} Mobile viewport state */
       isMobile: false,
+      /** @type {string} Current user prompt */
       userPrompt: "",
+      /** @type {Array<Object>} Chat history list */
       chats: [
         {
           id: 1,
@@ -169,7 +178,9 @@ export default {
           title: "Chat 2",
         },
       ],
+      /** @type {Object|null} Currently selected chat */
       selectedChat: null,
+      /** @type {Array<Object>} Chat messages */
       messages: [
         {
           content: "Hello! How can I help you today?",
@@ -219,15 +230,20 @@ export default {
           timestamp: new Date(Date.now() - 2800000),
         },
       ],
+      /** @type {boolean} File selection dialog visibility */
       showFileDialog: false,
+      /** @type {Array<number>} Selected transcription IDs */
       selectedTranscriptions: [],
+      /** @type {Array<Object>} Available transcriptions */
       availableTranscriptions: [
         { title: 'Interview_001.txt', value: 1 },
         { title: 'Meeting_2024_01_15.txt', value: 2 },
         { title: 'Conference_Call_Q4.txt', value: 3 },
         { title: 'Customer_Feedback_Session.txt', value: 4 },
       ],
+      /** @type {boolean} Prompt processing state */
       processingPrompt: false,
+      /** @type {Array<string>} Suggested prompts */
       promptSuggestions: [
         'Summarize this transcript',
         'Extract action items',
@@ -249,12 +265,19 @@ export default {
   },
 
   methods: {
+    /**
+     * Handles drawer click events
+     * Toggles drawer on mobile view
+     */
     handleDrawerClick() {
       if (this.isMobile) {
         this.drawer = !this.drawer;
       }
     },
 
+    /**
+     * Updates mobile state based on screen size
+     */
     checkScreenSize() {
       this.isMobile = window.innerWidth < 960;
       if (this.isMobile) {
@@ -262,6 +285,10 @@ export default {
       }
     },
 
+    /**
+     * Selects a chat and updates UI accordingly
+     * @param {Object} chat - Chat object to select
+     */
     selectChat(chat) {
       this.selectedChat = chat;
       if (this.isMobile) {
@@ -269,6 +296,11 @@ export default {
       }
     },
 
+    /**
+     * Formats timestamp to localized time string
+     * @param {Date} date - Date to format
+     * @returns {string} Formatted time string
+     */
     formatTime(date) {
       if (!date) return '';
       return new Date(date).toLocaleTimeString([], { 
@@ -278,24 +310,25 @@ export default {
       });
     },
 
+    /**
+     * Sends a new message and processes response
+     * @returns {Promise<void>}
+     */
     async sendMessage() {
       if (!this.userPrompt.trim()) return;
 
       this.processingPrompt = true;
       
-      // Add user message with current timestamp
       this.messages.push({
         content: this.userPrompt,
         isUser: true,
         timestamp: new Date(),
       });
 
-      // Store the prompt before clearing
       const userPrompt = this.userPrompt;
       this.userPrompt = "";
 
       try {
-        // Simulate AI response
         await new Promise(resolve => setTimeout(resolve, 1000));
         
         this.messages.push({
@@ -309,6 +342,9 @@ export default {
       }
     },
 
+    /**
+     * Scrolls chat to the bottom
+     */
     scrollToBottom() {
       setTimeout(() => {
         const chatMessages = document.querySelector(".chat-messages");
@@ -316,12 +352,17 @@ export default {
       }, 100);
     },
 
+    /**
+     * Opens file selection dialog
+     */
     openFileDialog() {
       this.showFileDialog = true;
     },
 
+    /**
+     * Handles file attachment process
+     */
     attachFiles() {
-      // Here you would handle the selected transcriptions
       console.log('Selected transcriptions:', this.selectedTranscriptions);
       this.showFileDialog = false;
     },

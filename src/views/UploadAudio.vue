@@ -7,12 +7,13 @@
 
     <!-- Upload Card -->
     <v-card class="upload-zone mb-4" @drop.prevent="handleDrop" @dragover.prevent @dragenter="dragEnter"
-      @dragleave="dragLeave" :class="{ 'drag-over': isDragging }" elevation="0" border>
+      @dragleave="dragLeave" @click="triggerFileInput" :class="{ 'drag-over': isDragging }" elevation="0" border
+      :ripple="false">
       <v-card-text class="text-center pa-8">
         <v-icon size="64" color="primary" class="mb-4">mdi-cloud-upload</v-icon>
         <div class="text-h6 mb-2">
           Drag and drop or
-          <span class="text-primary cursor-pointer" @click="triggerFileInput">browse</span>
+          <span class="text-primary cursor-pointer">browse</span>
         </div>
         <div class="text-body-2 text-medium-emphasis">
           Supports MP3, WAV, M4A, and other audio formats
@@ -49,50 +50,24 @@
               </div>
 
               <!-- Close Button -->
-              <v-btn
-                icon="mdi-close"
-                variant="text"
-                density="comfortable"
-                color="error"
-                size="small"
-                @click="removeFile(index)"
-                :disabled="file.uploading"
-                class="ms-2 flex-shrink-0"
-              />
+              <v-btn icon="mdi-close" variant="text" density="comfortable" color="error" size="small"
+                @click="removeFile(index)" :disabled="file.uploading" class="ms-2 flex-shrink-0" />
             </div>
 
             <!-- Progress Bar -->
-            <v-progress-linear
-              :model-value="88"
-              color="primary"
-              height="2"
-              class="mt-3"
-            ></v-progress-linear>
+            <v-progress-linear :model-value="88" color="primary" height="2" class="mt-3"></v-progress-linear>
           </v-card-text>
         </v-card>
       </div>
     </div>
     <!-- Action Buttons in a fixed position -->
     <div v-if="audioFiles?.length" class="action-buttons">
-      <v-btn 
-        variant="outlined" 
-        color="error" 
-        @click="clearFiles" 
-        :disabled="uploading" 
-        :block="isMobile"
-        :size="isMobile ? undefined : 'small'"
-        class="action-btn"
-      >
+      <v-btn variant="outlined" color="error" @click="clearFiles" :disabled="uploading" :block="isMobile"
+        :size="isMobile ? undefined : 'small'" class="action-btn">
         Cancel
       </v-btn>
-      <v-btn 
-        color="primary" 
-        :loading="uploading" 
-        @click="uploadFiles" 
-        :block="isMobile"
-        :size="isMobile ? undefined : 'small'"
-        class="action-btn"
-      >
+      <v-btn color="primary" :loading="uploading" @click="uploadFiles" :block="isMobile"
+        :size="isMobile ? undefined : 'small'" class="action-btn">
         Add files
       </v-btn>
     </div>
@@ -102,17 +77,32 @@
 <script>
 import { useAudioStore } from "@/stores/audioStore";
 
+/**
+ * @component UploadAudio
+ * @description Handles audio file uploads with drag and drop functionality
+ */
 export default {
   name: "UploadAudio",
 
   data() {
     return {
+      /** @type {File[]} Array of audio files to be uploaded */
       audioFiles: [],
+      /** @type {boolean} Flag indicating if upload is in progress */
       uploading: false,
+      /** @type {string|null} Error message to display */
       error: null,
+      /** @type {boolean} Flag indicating if file is being dragged over drop zone */
       isDragging: false,
+      /** @type {boolean} Flag indicating if viewport is mobile width */
       isMobile: false,
+      /** @type {Array<Function>} Array of validation rules for file input */
       fileRules: [
+        /**
+         * Validates audio files for type and size
+         * @param {File|File[]} v - Single file or array of files to validate
+         * @returns {boolean|string} True if valid, error message if invalid
+         */
         (v) => {
           if (!v) return true;
 
@@ -132,46 +122,59 @@ export default {
     };
   },
 
+  /**
+   * Lifecycle hook - Sets up mobile detection
+   */
   mounted() {
-    // Initial check
     this.checkMobile();
-    // Add resize listener
     window.addEventListener('resize', this.checkMobile);
   },
 
+  /**
+   * Lifecycle hook - Cleans up event listeners
+   */
   beforeUnmount() {
-    // Clean up
     window.removeEventListener('resize', this.checkMobile);
   },
 
   methods: {
+    /**
+     * Checks if the current viewport is mobile width
+     * Updates isMobile state based on window width
+     */
     checkMobile() {
-      this.isMobile = window.innerWidth < 600; // Matches Vuetify's mobile breakpoint
+      this.isMobile = window.innerWidth < 600;
     },
 
+    /**
+     * Handles file selection from the file input
+     * Filters and adds valid audio files to the list
+     * @param {Event} event - File input change event
+     */
     handleFileChange(event) {
       const files = event.target.files;
       if (!files) return;
 
-      // Filter valid files
       const validFiles = Array.from(files).filter((file) => {
         const sizeInMB = file.size / (1024 * 1024);
         return file.type.startsWith("audio/") && sizeInMB <= 20;
       });
 
-      // Append new files to existing ones
       this.audioFiles = [...this.audioFiles, ...validFiles];
-
-      // Reset the input
       event.target.value = "";
     },
 
+    /**
+     * Handles files dropped into the drop zone
+     * Filters and adds valid audio files to the list
+     * @param {DragEvent} e - Drop event
+     */
     handleDrop(e) {
       this.isDragging = false;
       const files = Array.from(e.dataTransfer.files).filter((file) =>
         file.type.startsWith("audio/")
       );
-      // Use the same logic as handleFileChange
+
       if (files.length) {
         const validFiles = files.filter((file) => {
           const sizeInMB = file.size / (1024 * 1024);
@@ -181,40 +184,57 @@ export default {
       }
     },
 
+    /**
+     * Sets dragging state when files are dragged over the drop zone
+     */
     dragEnter() {
       this.isDragging = true;
     },
 
+    /**
+     * Handles drag leave events for the drop zone
+     * Only updates state if cursor leaves the drop zone completely
+     * @param {DragEvent} e - Drag leave event
+     */
     dragLeave(e) {
       if (!e.relatedTarget || !e.currentTarget.contains(e.relatedTarget)) {
         this.isDragging = false;
       }
     },
 
+    /**
+     * Removes a file from the audio files list
+     * @param {number} index - Index of the file to remove
+     */
     removeFile(index) {
       if (!this.audioFiles[index].uploading) {
         this.audioFiles.splice(index, 1);
       }
     },
 
+    /**
+     * Clears all files from the audio files list
+     */
     clearFiles() {
       this.audioFiles = [];
     },
 
+    /**
+     * Uploads all audio files to the server
+     * Updates state based on upload success/failure
+     * @returns {Promise<void>}
+     */
     async uploadFiles() {
       if (!this.audioFiles?.length) return;
 
       const audioStore = useAudioStore();
       this.uploading = true;
       this.error = null;
+
       try {
-        // Pass the array of files directly to the store method
         await audioStore.addAudio(this.audioFiles, 'upload');
-
         // await audioStore.uploadAudio("/audio-transcription", this.audioFiles);
-
         this.audioFiles = [];
-        // Add success notification here if needed
       } catch (error) {
         console.error("Upload failed:", error);
         this.error = error.message || "Failed to upload audio files";
@@ -223,10 +243,18 @@ export default {
       }
     },
 
+    /**
+     * Triggers click event on the hidden file input
+     */
     triggerFileInput() {
       this.$refs.fileInput.click();
     },
 
+    /**
+     * Checks if text element content is truncated
+     * @param {HTMLElement} element - DOM element to check
+     * @returns {boolean} True if text is truncated
+     */
     isTextTruncated(element) {
       if (!element) return false;
       return element.scrollWidth > element.clientWidth;
@@ -234,6 +262,7 @@ export default {
   },
 };
 </script>
+
 <style scoped>
 .upload-zone {
   border: none;

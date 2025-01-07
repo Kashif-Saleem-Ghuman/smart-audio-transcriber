@@ -2,9 +2,42 @@ import { defineStore } from 'pinia'
 import { uploadClient, apiClient } from '@/api/axios'
 // import axios from 'axios'
 
+/**
+ * @typedef {Object} ChatMessage
+ * @property {string} id - Unique identifier for the message
+ * @property {string} content - Message content
+ * @property {string} role - Role of the sender ('user' or 'assistant')
+ * @property {Date} timestamp - When the message was sent
+ */
+
+/**
+ * @typedef {Object} ChatSession
+ * @property {string} id - Unique identifier for the chat
+ * @property {string} title - Chat title
+ * @property {string[]} transcriptionIds - IDs of associated transcriptions
+ * @property {ChatMessage[]} messages - Array of chat messages
+ * @property {Date} createdAt - When the chat was created
+ * @property {string} status - Current status of the chat
+ */
+
+/**
+ * @typedef {Object} AudioFile
+ * @property {string} id - Unique identifier for the audio file
+ * @property {string} title - File name/title
+ * @property {string} source - Source of the audio ('upload' or 'youtube')
+ * @property {Date} createdAt - When the file was added
+ * @property {string} status - Current status of the file
+ * @property {Object|null} transcription - Transcription data if available
+ */
+
+/**
+ * Store for managing audio files and chat functionality
+ */
 export const useAudioStore = defineStore('audio', {
   state: () => ({
+    /** @type {AudioFile[]} */
     audioFiles: [],
+    /** @type {ChatSession[]} */
     chatHistory: [
       // add dummy chat
       {
@@ -24,11 +57,17 @@ export const useAudioStore = defineStore('audio', {
         status: 'completed'
       }
     ], // Array of chat sessions
+    /** @type {string|null} */
     activeChat: null // Current active chat session
   }),
 
   actions: {
-    // State management actions
+    /**
+     * Adds new audio files to the store
+     * @param {File[]} audioFiles - Array of audio files to add
+     * @param {string} source - Source of the files ('upload' or 'youtube')
+     * @param {Object} [config={}] - Optional configuration for upload
+     */
     async addAudio(audioFiles, source, config = {}) {
       console.log("Adding audio files:", audioFiles);
       audioFiles.forEach(file => {
@@ -64,6 +103,11 @@ export const useAudioStore = defineStore('audio', {
     //   }
     // },
 
+    /**
+     * Updates the status of an audio file
+     * @param {string} audioId - ID of the audio file
+     * @param {string} status - New status to set
+     */
     updateAudioStatus(audioId, status) {
       const audio = this.audioFiles.find(a => a.id === audioId);
       if (audio) {
@@ -71,6 +115,11 @@ export const useAudioStore = defineStore('audio', {
       }
     },
 
+    /**
+     * Sets transcription data for an audio file
+     * @param {string} audioId - ID of the audio file
+     * @param {Object} transcription - Transcription data
+     */
     setTranscription(audioId, transcription) {
       const audio = this.audioFiles.find(a => a.id === audioId);
       if (audio) {
@@ -79,7 +128,12 @@ export const useAudioStore = defineStore('audio', {
       }
     },
 
-    // API actions
+    /**
+     * Uploads audio files to the server
+     * @param {string} url - Upload endpoint URL
+     * @param {File[]} files - Array of files to upload
+     * @returns {Promise<Object>} Upload response
+     */
     uploadAudio(url, files) {
       const formData = new FormData()
       files.forEach((file, index) => {
@@ -155,10 +209,18 @@ export const useAudioStore = defineStore('audio', {
   },
 
   getters: {
+    /**
+     * Gets audio files with 'ready' status
+     * @returns {AudioFile[]}
+     */
     getReadyAudios: (state) => {
       return state.audioFiles.filter(audio => audio.status === 'ready');
     },
 
+    /**
+     * Gets audio files with 'completed' status
+     * @returns {AudioFile[]}
+     */
     getCompletedAudios: (state) => {
       return state.audioFiles.filter(audio => audio.status === 'completed')
     },

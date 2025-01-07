@@ -3,88 +3,44 @@
     <v-row>
       <v-col cols="12" md="8" class="mx-auto">
         <!-- Error Alert -->
-        <v-alert
-          v-if="error"
-          type="error"
-          class="mb-4 alert-icon-centered"
-          closable
-          @click:close="error = null"
-        >
+        <v-alert v-if="error" type="error" class="mb-4 alert-icon-centered" closable @click:close="error = null">
           {{ error }}
         </v-alert>
 
         <v-card class="transcribe-container">
           <v-card-title class="d-flex align-center py-4 px-6">
-            <v-icon
-              icon="mdi-text-to-speech"
-              :size="$vuetify.display.smAndDown ? '24' : '32'"
-              class="me-3"
-              color="primary"
-            />
-            <span
-              :class="
-                $vuetify.display.smAndDown
-                  ? 'text-subtitle-2'
-                  : 'text-h6'
-              "
-            >
+            <v-icon icon="mdi-text-to-speech" :size="$vuetify.display.smAndDown ? '24' : '32'" class="me-3"
+              color="primary" />
+            <span :class="$vuetify.display.smAndDown
+              ? 'text-subtitle-2'
+              : 'text-h6'
+              ">
               Transcribe Audio Files
             </span>
           </v-card-title>
 
           <v-card-text>
-            <v-alert
-              v-if="!hasAudioFiles"
-              type="info"
-              class="mb-4"
-            >
+            <v-alert v-if="!hasAudioFiles" type="info" class="mb-4">
               No audio files available for transcription. Please upload audio files or extract from YouTube first.
             </v-alert>
 
             <template v-else>
-              <v-select
-                v-model="selectedAudios"
-                :items="availableAudios"
-                item-title="title"
-                item-value="id"
-                label="Select Audio Files"
-                multiple
-                chips
-                variant="outlined"
-                prepend-inner-icon="mdi-music-note"
-                :rules="[v => !!v.length || 'Please select at least one audio file']"
-              >
+              <v-select v-model="selectedAudios" :items="availableAudios" item-title="title" item-value="id"
+                label="Select Audio Files" multiple chips variant="outlined" prepend-inner-icon="mdi-music-note"
+                :rules="[v => !!v.length || 'Please select at least one audio file']">
                 <template v-slot:selection="{ item }">
-                  <v-chip
-                    :prepend-icon="item.raw.source === 'youtube' ? 'mdi-youtube' : 'mdi-file-music'"
-                    :color="item.raw.source === 'youtube' ? 'red' : 'primary'"
-                    class="mr-1"
-                  >
+                  <v-chip :prepend-icon="item.raw.source === 'youtube' ? 'mdi-youtube' : 'mdi-file-music'"
+                    :color="item.raw.source === 'youtube' ? 'red' : 'primary'" class="mr-1">
                     {{ item.title }}
                   </v-chip>
                 </template>
               </v-select>
 
-              <v-select
-                v-model="language"
-                :items="languages"
-                label="Audio Language"
-                variant="outlined"
-                prepend-inner-icon="mdi-translate"
-                class="mt-4"
-                :rules="[v => !!v || 'Please select a language']"
-              />
+              <v-select v-model="language" :items="languages" label="Audio Language" variant="outlined"
+                prepend-inner-icon="mdi-translate" class="mt-4" :rules="[v => !!v || 'Please select a language']" />
 
-              <v-btn
-                block
-                color="primary"
-                :size="$vuetify.display.smAndDown ? 'small' : 'x-large'"
-                :loading="processing"
-                :disabled="!isValidForm"
-                @click="processTranscription"
-                elevation="2"
-                class="mt-6"
-              >
+              <v-btn block color="primary" :size="$vuetify.display.smAndDown ? 'small' : 'x-large'"
+                :loading="processing" :disabled="!isValidForm" @click="processTranscription" elevation="2" class="mt-6">
                 <v-icon start class="me-2">mdi-transcribe</v-icon>
                 Start Transcription
               </v-btn>

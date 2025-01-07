@@ -206,22 +206,42 @@
 </template>
 
 <script>
+/**
+ * @component DashboardHome
+ * @description Main dashboard view for managing and reviewing audio files and their transcriptions
+ */
 export default {
-    name: 'DashboardHome',
+    name: "DashboardHome",
 
     data() {
         return {
             search: '',
             loading: false,
-            audioDialog: false,
-            transcriptDialog: false,
-            deleteDialog: false,
+            /** @type {boolean} Loading state for delete operation */
             deleting: false,
+            /** @type {boolean} Audio player dialog visibility */
+            audioDialog: false,
+            /** @type {boolean} Transcript dialog visibility */
+            transcriptDialog: false,
+            /** @type {boolean} Delete confirmation dialog visibility */
+            deleteDialog: false,
+            /** @type {boolean} AI prompt dialog visibility */
+            promptDialog: false,
+            /** @type {Object|null} Currently selected audio file */
+            selectedFile: null,
+            /** @type {string} Current AI prompt input */
+            newPrompt: "",
+            /** @type {boolean} AI prompt processing state */
+            processingPrompt: false,
+            /** @type {Array<Object>} History of prompts and responses */
+            promptHistory: [],
+            /** @type {string|null} ID of currently playing audio */
             currentlyPlaying: null,
             selectedFile: null,
             dateFilter: 'all',
             sortBy: 'newest',
 
+            /** @type {Array<Object>} Table column configurations */
             headers: [
                 {
                     title: 'Name',
@@ -258,6 +278,7 @@ export default {
                 },
             ],
 
+            /** @type {Array<Object>} Date filter options */
             dateFilters: [
                 { title: 'All Time', value: 'all' },
                 { title: 'Last 7 Days', value: '7days' },
@@ -265,6 +286,7 @@ export default {
                 { title: 'Last 90 Days', value: '90days' },
             ],
 
+            /** @type {Array<Object>} Sort options for the table */
             sortOptions: [
                 { title: 'Newest First', value: 'newest' },
                 { title: 'Oldest First', value: 'oldest' },
@@ -388,8 +410,8 @@ export default {
 
     computed: {
         /**
-         * Filters and sorts the audio files based on selected date range and sort criteria
-         * @returns {Array} Filtered and sorted array of audio files
+         * Filters and sorts audio files based on current search, date, and sort settings
+         * @returns {Array<Object>} Filtered and sorted list of audio files
          */
         filteredAudioFiles() {
             let files = [...this.audioFiles]
@@ -428,9 +450,9 @@ export default {
 
     methods: {
         /**
-         * Gets the color for the status chip based on file status
-         * @param {string} status - The status of the audio file ('completed', 'processing', 'error')
-         * @returns {string} Color name for the status chip
+         * Gets the appropriate color for a file status
+         * @param {string} status - The status of the file
+         * @returns {string} Color name for the status
          */
         getStatusColor(status) {
             switch (status) {
@@ -446,9 +468,9 @@ export default {
         },
 
         /**
-         * Gets the icon name for the status based on file status
-         * @param {string} status - The status of the audio file ('completed', 'processing', 'error')
-         * @returns {string} Material Design icon name
+         * Gets the appropriate icon for a file status
+         * @param {string} status - The status of the file
+         * @returns {string} Icon name for the status
          */
         getStatusIcon(status) {
             switch (status) {
@@ -464,7 +486,7 @@ export default {
         },
 
         /**
-         * Formats seconds into MM:SS format
+         * Formats duration from seconds to MM:SS format
          * @param {number} seconds - Duration in seconds
          * @returns {string} Formatted duration string
          */
@@ -476,8 +498,8 @@ export default {
         },
 
         /**
-         * Formats date to localized date string
-         * @param {string} date - ISO date string
+         * Formats date to localized string
+         * @param {Date|string} date - Date to format
          * @returns {string} Formatted date string
          */
         formatDate(date) {
@@ -486,8 +508,8 @@ export default {
         },
 
         /**
-         * Formats date to localized time string
-         * @param {string} date - ISO date string
+         * Formats time to localized string
+         * @param {Date|string} date - Date to format
          * @returns {string} Formatted time string
          */
         formatTime(date) {
@@ -496,8 +518,8 @@ export default {
         },
 
         /**
-         * Opens audio player dialog for the selected file
-         * @param {Object} file - Audio file object
+         * Initiates audio playback for a file
+         * @param {Object} file - Audio file to play
          */
         playAudio(file) {
             if (!file?.url) return
@@ -514,8 +536,8 @@ export default {
         },
 
         /**
-         * Opens transcript dialog for the selected file
-         * @param {Object} file - Audio file object
+         * Opens transcript viewer for a file
+         * @param {Object} file - File whose transcript to view
          */
         viewTranscript(file) {
             if (!file?.transcript || file.status !== 'completed') return
@@ -598,8 +620,8 @@ export default {
         },
 
         /**
-         * Opens AI prompt dialog and loads prompt history
-         * @param {Object} file - Audio file object
+         * Opens AI prompt dialog for a file
+         * @param {Object} file - File to process with AI
          */
         openPromptDialog(file) {
             this.selectedFile = file
@@ -610,8 +632,7 @@ export default {
 
         /**
          * Loads prompt history for a specific file
-         * @param {number} fileId - ID of the audio file
-         * @returns {Promise<void>}
+         * @param {string} fileId - ID of the file to load history for
          */
         async loadPromptHistory(fileId) {
             // Simulate API call delay
@@ -695,7 +716,7 @@ export default {
         },
 
         /**
-         * Sends a new prompt to the AI and handles the response
+         * Processes and sends a new AI prompt
          * @returns {Promise<void>}
          */
         async sendPrompt() {

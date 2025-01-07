@@ -141,17 +141,17 @@ export default {
       companyLogo: '/path/to/your/logo.png',
       menuItems: [
         {
-          title: 'Listing',
+          title: 'Audio Files',
           icon: 'mdi-view-list',
           path: '/dashboard/listing'
         },
         {
-          title: 'Upload Audio',
+          title: 'Upload Files',
           icon: 'mdi-upload',
           path: '/dashboard/upload-audio'
         },
         {
-          title: 'Extract Audio From Youtube',
+          title: 'Extract from YouTube',
           icon: 'mdi-youtube',
           path: '/dashboard/extract-audio-from-youtube'
         },
@@ -161,12 +161,12 @@ export default {
           path: '/dashboard/transcribe-audio'
         },
         {
-          title: 'Process Trasncriptions',
+          title: 'Process Transcriptions',
           icon: 'mdi-file-document-outline',
           path: '/dashboard/process-transcriptions'
         },
         {
-          title: 'Subscriptions',
+          title: 'Subscription Plans',
           icon: 'mdi-credit-card',
           path: '/dashboard/subscriptions'
         }
@@ -206,8 +206,20 @@ export default {
       return this.user?.user?.email || 'user@example.com'
     },
 
+    /**
+     * Gets the page title based on current route
+     * @returns {string} Current page title
+     */
     getPageTitle() {
-      return this.$route.path === '/dashboard/upload-audio' ? 'Upload files' : 'Dashboard'
+      // Find matching menu item
+      const menuItem = this.menuItems.find(item => item.path === this.$route.path);
+      
+      // Special cases
+      if (this.$route.path === '/dashboard') return 'Dashboard';
+      if (this.$route.path === '/dashboard/profile') return 'User Profile';
+      
+      // Return menu item title or default
+      return menuItem?.title || 'Dashboard';
     }
   },
 
@@ -230,11 +242,26 @@ export default {
 
     /**
      * Checks if the given path matches the current route
+     * Handles route groups to prevent multiple highlights
      * @param {string} path - Route path to check
      * @returns {boolean}
      */
     isCurrentRoute(path) {
-      return this.$route.path === path
+      // Define route groups that should be mutually exclusive
+      const routeGroups = [
+        ['/dashboard/listing', '/dashboard/upload-audio'],
+        // Add other groups if needed
+      ];
+
+      // Check if path is part of a group
+      const group = routeGroups.find(group => group.includes(path));
+      if (group) {
+        // If in a group, only highlight if exact match
+        return this.$route.path === path;
+      }
+
+      // For non-grouped routes, use normal matching
+      return this.$route.path === path;
     },
 
     /**

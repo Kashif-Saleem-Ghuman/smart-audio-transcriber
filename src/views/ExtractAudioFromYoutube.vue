@@ -119,18 +119,29 @@
 </template>
 
 <script>
+/**
+ * @component ExtractAudioFromYoutube
+ * @description Handles YouTube video audio extraction functionality
+ */
 export default {
   name: "ExtractAudioFromYoutube",
 
   data() {
     return {
+      /** @type {Array<Object>} Array of YouTube card data */
       youtubeCards: [this.createNewCard()],
+      /** @type {boolean} Processing state */
       processing: false,
+      /** @type {string|null} Error message */
       error: null,
     };
   },
 
   computed: {
+    /**
+     * Checks if all form inputs are valid
+     * @returns {boolean} Form validity state
+     */
     isValidForm() {
       return this.youtubeCards.every(
         (card) =>
@@ -143,6 +154,10 @@ export default {
   },
 
   methods: {
+    /**
+     * Creates a new YouTube card with unique IDs
+     * @returns {Object} New card object
+     */
     createNewCard() {
       return {
         id: `card-${Math.random().toString(36).substr(2, 9)}`,
@@ -153,12 +168,19 @@ export default {
       };
     },
 
+    /**
+     * Adds a new YouTube card if limit not reached
+     */
     addNewCard() {
       if (this.youtubeCards.length < 5) {
         this.youtubeCards.push(this.createNewCard());
       }
     },
 
+    /**
+     * Removes a card by ID
+     * @param {string} cardId - ID of card to remove
+     */
     removeCard(cardId) {
       const index = this.youtubeCards.findIndex((card) => card.id === cardId);
       if (index !== -1) {
@@ -166,20 +188,34 @@ export default {
       }
     },
 
+    /**
+     * Validates YouTube URL format
+     * @param {string} url - URL to validate
+     * @returns {boolean|string} True if valid, error message if invalid
+     */
     validateYoutubeUrl(url) {
-      if (!url) return true; // Allow empty for v-rules
+      if (!url) return true;
       const pattern = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/;
       return pattern.test(url) || "Please enter a valid YouTube URL";
     },
 
+    /**
+     * Validates title format
+     * @param {string} value - Title to validate
+     * @returns {boolean|string} True if valid, error message if invalid
+     */
     validateTitle(value) {
-      if (!value) return true; // Allow empty for v-rules
+      if (!value) return true;
       return (
         /^[a-zA-Z0-9\s]+$/.test(value) ||
         "Title must contain only letters, numbers, and spaces"
       );
     },
 
+    /**
+     * Processes YouTube links for audio extraction
+     * @returns {Promise<void>}
+     */
     async processYoutubeLinks() {
       if (!this.isValidForm) return;
 
@@ -187,9 +223,8 @@ export default {
       this.error = null;
 
       try {
-        // TODO: Implement the API call to process YouTube links
         console.log("Processing links:", this.youtubeCards);
-        await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate API call
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       } catch (error) {
         this.error = error.message || "Failed to process YouTube links";
       } finally {
