@@ -39,7 +39,7 @@
           <v-divider></v-divider>
 
           <!-- Add More Button -->
-          <div class="sticky-header d-flex align-center justify-end pa-3">
+          <div v-if="youtubeCards.length" class="sticky-header d-flex align-center justify-end pa-3">
             <v-btn
               prepend-icon="mdi-plus"
               class="add-more-button text-capitalize"
@@ -80,7 +80,6 @@
                       <span class="text-subtitle-1">Video {{ youtubeCards.length > 1 ? index + 1 : '' }}</span>
                       <v-spacer />
                       <v-btn
-                        v-if="youtubeCards.length > 1"
                         icon="mdi-delete"
                         variant="text"
                         density="comfortable"
