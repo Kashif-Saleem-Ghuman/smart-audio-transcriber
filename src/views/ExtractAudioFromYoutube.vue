@@ -4,13 +4,24 @@
     <v-alert 
       v-if="error || isExtractionSuccess" 
       :type="error ? 'error' : 'success'" 
-      class="mb-4 alert-icon-centered" 
+      :color="error ? 'error-lighten' : 'success-lighten'"
+      :class="[
+        'mb-4 alert-icon-centered',
+        error ? 'error-alert' : 'success-alert'
+      ]"
       closable 
       @click="() => {
         error = null;
         isExtractionSuccess = false;
       }"
     >
+      <template v-slot:prepend>
+        <v-icon
+          :icon="error ? 'mdi-alert-circle' : 'mdi-check-circle'"
+          :color="error ? 'error' : 'success'"
+          start
+        />
+      </template>
       {{ error || 'Audio extraction completed successfully!' }}
     </v-alert>
 

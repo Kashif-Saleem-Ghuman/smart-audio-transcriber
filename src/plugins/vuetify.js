@@ -19,13 +19,17 @@ const customTheme = {
     secondary: '#475569',
     accent: '#0ea5e9',
     success: '#22c55e',
+    'success-lighten': '#dcfce7',
     error: '#ef4444',
+    'error-lighten': '#fee2e2',
     warning: '#f59e0b',
     info: '#3b82f6',
     background: '#f8fafc',
     surface: '#ffffff',
     'surface-variant': '#F3F4F6',
     'border-color': '#E5E7EB',
+    'on-success': '#ffffff',
+    'on-error': '#ffffff',
   }
 }
 
