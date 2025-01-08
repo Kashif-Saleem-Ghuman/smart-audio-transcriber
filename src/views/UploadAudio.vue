@@ -1,8 +1,12 @@
 <template>
   <v-container style="position: relative !important;">
     <!-- Error Alert -->
-    <v-alert v-if="error" type="error" class="mb-4 alert-icon-centered" closable @click:close="error = null">
-      {{ error }}
+    <v-alert v-if="error || isFileUploaded" :type="error ? 'error' : 'success'" class="mb-4 alert-icon-centered" closable 
+      @click="() => {
+        error = null;
+        isFileUploaded = false;
+      }">
+      {{ error || 'Files uploaded successfully!' }}
     </v-alert>
 
     <!-- Upload Card -->
@@ -25,7 +29,9 @@
     </v-card>
 
     <!-- File List -->
-    <div class="upload-container pb-3">
+    <div class="upload-container pb-3"
+    :style="audioFiles?.length == 5 ? 'height: calc(100vh - 350px);' : 'height: 100%;'"
+    >
       <!-- File List with fixed height and scroll -->
       <div v-if="audioFiles?.length" class="file-list">
         <v-card v-for="(file, index) in audioFiles" :key="index" elevation="0" border class="mb-2">
@@ -61,14 +67,14 @@
       </div>
     </div>
     <!-- Action Buttons in a fixed position -->
-    <div v-if="audioFiles?.length" class="action-buttons">
+    <div v-if="audioFiles?.length" class="action-buttons pe-4">
       <v-btn variant="outlined" color="error" @click="clearFiles" :disabled="uploading" :block="isMobile"
-        :size="isMobile ? undefined : 'small'" class="action-btn">
+        :size="isMobile ? undefined : 'large'" class="action-btn text-capitalize">
         Cancel
       </v-btn>
       <v-btn color="primary" :loading="uploading" @click="uploadFiles" :block="isMobile"
-        :size="isMobile ? undefined : 'small'" class="action-btn">
-        Add files
+        :size="isMobile ? undefined : 'large'" class="action-btn text-capitalize">
+        {{ audioFiles.length === 1 ? 'Upload Audio' : 'Upload Audios' }}
       </v-btn>
     </div>
   </v-container>
@@ -119,6 +125,7 @@ export default {
           return true;
         },
       ],
+      isFileUploaded: false,
     };
   },
 
@@ -233,6 +240,8 @@ export default {
 
       try {
         await audioStore.addAudio(this.audioFiles, 'upload');
+        // show v-alert with success message
+        this.isFileUploaded = true
         // await audioStore.uploadAudio("/audio-transcription", this.audioFiles);
         this.audioFiles = [];
       } catch (error) {
@@ -408,6 +417,10 @@ export default {
   overflow: hidden;
 }
 
+.action-btn { 
+    min-width: 164px !important;
+  }
+
 /* Update mobile styles */
 @media (max-width: 600px) {
   :deep(.v-card-text) {
@@ -427,10 +440,7 @@ export default {
   .file-content {
     margin-right: 4px;
   }
-}
 
-/* Update mobile styles for action buttons */
-@media (max-width: 600px) {
   .action-buttons {
     position: fixed;
     bottom: 0;

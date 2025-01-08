@@ -141,22 +141,22 @@ export default {
       companyLogo: '/path/to/your/logo.png',
       menuItems: [
         {
-          title: 'Audio Files',
+          title: 'Listing',
           icon: 'mdi-view-list',
           path: '/dashboard/listing'
         },
         {
-          title: 'Upload Files',
+          title: 'Upload Audios',
           icon: 'mdi-upload',
           path: '/dashboard/upload-audio'
         },
         {
-          title: 'Extract from YouTube',
+          title: 'Extract Audios from YouTube',
           icon: 'mdi-youtube',
           path: '/dashboard/extract-audio-from-youtube'
         },
         {
-          title: 'Transcribe Audio',
+          title: 'Transcribe Audios',
           icon: 'mdi-microphone',
           path: '/dashboard/transcribe-audio'
         },
