@@ -15,14 +15,12 @@
         </v-alert>
 
         <v-card class="youtube-container">
-          <!-- Sticky Header with Add More and Extract Buttons -->
-          <div class="sticky-header d-flex align-center justify-space-between pa-3">
+          <!-- Sticky Header -->
+          <div class="sticky-header d-flex align-center justify-end pa-3">
             <v-btn
               prepend-icon="mdi-plus"
               class="add-more-button text-capitalize"
-              :class="
-                $vuetify.display.smAndDown ? 'text-caption' : 'text-button'
-              "
+              :class="$vuetify.display.smAndDown ? 'text-caption' : 'text-button'"
               size="x-small"
               variant="outlined"
               color="primary"
@@ -31,83 +29,89 @@
             >
               Add More Links
             </v-btn>
-
-            <!-- Main Extract Button -->
-            <v-btn
-              color="primary"
-              :loading="processing"
-              :disabled="!isValidForm || youtubeCards.length === 0"
-              @click="processYoutubeLinks"
-              :size="$vuetify.display.smAndDown ? 'small' : 'large'"
-              prepend-icon="mdi-download"
-              class="text-capitalize"
-            >
-              Extract {{ youtubeCards.length > 1 ? 'All' : '' }} {{ youtubeCards.length > 1 ? 'Audios' : 'Audio' }} 
-            </v-btn>
           </div>
 
-          <!-- Scrollable Cards Section -->
+          <!-- Cards Container with Scrollable Area -->
           <div class="cards-container">
-            <v-slide-y-transition group>
-              <div v-for="(card, index) in youtubeCards" :key="card.id" class="pa-4">
-                <v-card class="bg-grey-lighten-4" elevation="1">
-                  <v-card-title class="d-flex align-center py-4 px-6">
-                    <v-icon
-                      icon="mdi-youtube"
-                      :size="$vuetify.display.smAndDown ? '24' : '32'"
-                      class="me-3"
-                      color="primary"
-                    />
-                    <span
-                      :class="
-                        $vuetify.display.smAndDown
-                          ? 'text-subtitle-2 text-wrap'
-                          : 'text-h6'
-                      "
-                      >YouTube Video {{ youtubeCards.length > 1 ? index + 1 : '' }}</span
-                    >
+            <!-- Scrollable Cards Wrapper -->
+            <div class="cards-wrapper">
+              <v-slide-y-transition group>
+                <div v-for="(card, index) in youtubeCards" :key="card.id" class="pa-4">
+                  <v-card class="bg-grey-lighten-4" elevation="1">
+                    <v-card-title class="d-flex align-center py-4 px-6">
+                      <v-icon
+                        icon="mdi-youtube"
+                        :size="$vuetify.display.smAndDown ? '24' : '32'"
+                        class="me-3"
+                        color="primary"
+                      />
+                      <span
+                        :class="
+                          $vuetify.display.smAndDown
+                            ? 'text-subtitle-2 text-wrap'
+                            : 'text-h6'
+                        "
+                        >YouTube Video {{ youtubeCards.length > 1 ? index + 1 : '' }}</span
+                      >
 
-                    <v-spacer />
+                      <v-spacer />
 
-                    <v-btn
-                      v-if="youtubeCards.length > 1"
-                      icon="mdi-delete"
-                      variant="text"
-                      density="comfortable"
-                      @click="removeCard(card.id)"
-                      color="error"
-                    />
-                  </v-card-title>
+                      <v-btn
+                        v-if="youtubeCards.length > 1"
+                        icon="mdi-delete"
+                        variant="text"
+                        density="comfortable"
+                        @click="removeCard(card.id)"
+                        color="error"
+                      />
+                    </v-card-title>
 
-                  <v-card-text>
-                    <v-text-field
-                      :id="card.titleId"
-                      v-model="card.title"
-                      label="Video Title"
-                      variant="outlined"
-                      density="comfortable"
-                      class="mb-3"
-                      prepend-inner-icon="mdi-format-title"
-                      :rules="[validateTitle]"
-                      @input="validateTitle"
-                      hide-details="auto"
-                    />
+                    <v-card-text>
+                      <v-text-field
+                        :id="card.titleId"
+                        v-model="card.title"
+                        label="Video Title"
+                        variant="outlined"
+                        density="comfortable"
+                        class="mb-3"
+                        prepend-inner-icon="mdi-format-title"
+                        :rules="[validateTitle]"
+                        @input="validateTitle"
+                        hide-details="auto"
+                      />
 
-                    <v-text-field
-                      :id="card.linkId"
-                      v-model="card.link"
-                      label="YouTube Video Link"
-                      variant="outlined"
-                      density="comfortable"
-                      prepend-inner-icon="mdi-link"
-                      :rules="[validateYoutubeUrl]"
-                      @input="validateYoutubeUrl"
-                      hide-details="auto"
-                    />
-                  </v-card-text>
-                </v-card>
-              </div>
-            </v-slide-y-transition>
+                      <v-text-field
+                        :id="card.linkId"
+                        v-model="card.link"
+                        label="YouTube Video Link"
+                        variant="outlined"
+                        density="comfortable"
+                        prepend-inner-icon="mdi-link"
+                        :rules="[validateYoutubeUrl]"
+                        @input="validateYoutubeUrl"
+                        hide-details="auto"
+                      />
+                    </v-card-text>
+                  </v-card>
+                </div>
+              </v-slide-y-transition>
+            </div>
+
+            <!-- Fixed Extract Button -->
+            <div class="extract-button-wrapper">
+              <v-btn
+                color="primary"
+                :loading="processing"
+                :disabled="!isValidForm || youtubeCards.length === 0"
+                @click="processYoutubeLinks"
+                :size="$vuetify.display.smAndDown ? 'small' : 'large'"
+                prepend-icon="mdi-download"
+                class="text-capitalize"
+                block
+              >
+                Extract {{ youtubeCards.length > 1 ? 'All' : '' }} {{ youtubeCards.length > 1 ? 'Audios' : 'Audio' }}
+              </v-btn>
+            </div>
           </div>
         </v-card>
       </v-col>
@@ -250,30 +254,59 @@ export default {
 
 .cards-container {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden; /* Prevent container scroll */
+}
+
+.cards-wrapper {
+  flex: 1;
   overflow-y: auto;
-  padding-bottom: 16px;
+  padding-bottom: 80px; /* Space for extract button */
+}
+
+.extract-button-wrapper {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px;
+  background: white;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Custom scrollbar styles */
+.cards-wrapper::-webkit-scrollbar {
+  width: 8px;
+}
+
+.cards-wrapper::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.cards-wrapper::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.cards-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #666;
 }
 
 .add-more-button {
   height: 33px !important;
 }
 
-/* Custom scrollbar for cards container */
-.cards-container::-webkit-scrollbar {
-  width: 8px;
-}
+/* Add responsive styles for mobile */
+@media (max-width: 600px) {
+  .extract-button-wrapper {
+    padding: 12px;
+  }
 
-.cards-container::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
-}
-
-.cards-container::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 4px;
-}
-
-.cards-container::-webkit-scrollbar-thumb:hover {
-  background: #666;
+  .cards-wrapper {
+    padding-bottom: 70px;
+  }
 }
 </style>
