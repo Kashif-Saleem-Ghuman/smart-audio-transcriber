@@ -1,61 +1,73 @@
 <template>
   <v-container>
+    <!-- Error/Success Alert -->
+    <v-alert 
+      v-if="error || isExtractionSuccess" 
+      :type="error ? 'error' : 'success'" 
+      class="mb-4 alert-icon-centered" 
+      closable 
+      @click="() => {
+        error = null;
+        isExtractionSuccess = false;
+      }"
+    >
+      {{ error || 'Audio extraction completed successfully!' }}
+    </v-alert>
+
     <v-row>
       <v-col cols="12" md="8" class="mx-auto">
-        <!-- Error Alert -->
-        <v-alert
-          v-if="error"
-          type="error"
-          class="mb-4 alert-icon-centered"
-          closable
-          :timeout="4000"
-          @click:close="error = null"
-        >
-          {{ error }}
-        </v-alert>
-
         <v-card class="youtube-container">
           <!-- Sticky Header -->
+          <v-card-title class="d-flex align-center py-4 px-6">
+            <v-icon icon="mdi-youtube" :size="$vuetify.display.smAndDown ? '24' : '32'" class="me-3" color="primary"/>
+            <span :class="$vuetify.display.smAndDown ? 'text-subtitle-2' : 'text-h6'">
+              Extract Audio from YouTube
+            </span>
+          </v-card-title>
+
+          <v-divider></v-divider>
+
+          <!-- Add More Button -->
           <div class="sticky-header d-flex align-center justify-end pa-3">
             <v-btn
               prepend-icon="mdi-plus"
               class="add-more-button text-capitalize"
               :class="$vuetify.display.smAndDown ? 'text-caption' : 'text-button'"
-              size="x-small"
+              size="small"
+
               variant="outlined"
               color="primary"
               @click="addNewCard"
               :disabled="youtubeCards.length >= 5"
             >
-              Add More Links
+              Add More Links ({{ youtubeCards.length }}/5)
             </v-btn>
           </div>
 
           <!-- Cards Container with Scrollable Area -->
           <div class="cards-container">
+            <!-- Empty State -->
+            <div v-if="youtubeCards.length === 0" class="empty-state pa-8 text-center">
+              <v-icon size="64" color="primary" class="mb-4">mdi-youtube</v-icon>
+              <div class="text-h6 mb-2">No YouTube Links Added</div>
+              <div class="text-body-2 text-medium-emphasis mb-4">
+                Add YouTube links to extract audio from videos
+              </div>
+              <v-btn color="primary" prepend-icon="mdi-plus" @click="addNewCard">
+                Add YouTube Link
+              </v-btn>
+            </div>
+
             <!-- Scrollable Cards Wrapper -->
-            <div class="cards-wrapper">
+            <div v-else class="cards-wrapper">
               <v-slide-y-transition group>
                 <div v-for="(card, index) in youtubeCards" :key="card.id" class="pa-4">
-                  <v-card class="bg-grey-lighten-4" elevation="1">
+                  <v-card class="bg-grey-lighten-4 youtube-card" elevation="1">
+
                     <v-card-title class="d-flex align-center py-4 px-6">
-                      <v-icon
-                        icon="mdi-youtube"
-                        :size="$vuetify.display.smAndDown ? '24' : '32'"
-                        class="me-3"
-                        color="primary"
-                      />
-                      <span
-                        :class="
-                          $vuetify.display.smAndDown
-                            ? 'text-subtitle-2 text-wrap'
-                            : 'text-h6'
-                        "
-                        >YouTube Video {{ youtubeCards.length > 1 ? index + 1 : '' }}</span
-                      >
-
+                      <v-icon icon="mdi-youtube" :size="24" class="me-3" color="error"/>
+                      <span class="text-subtitle-1">Video {{ youtubeCards.length > 1 ? index + 1 : '' }}</span>
                       <v-spacer />
-
                       <v-btn
                         v-if="youtubeCards.length > 1"
                         icon="mdi-delete"
@@ -63,10 +75,11 @@
                         density="comfortable"
                         @click="removeCard(card.id)"
                         color="error"
+                        :disabled="processing"
                       />
                     </v-card-title>
 
-                    <v-card-text>
+                    <v-card-text class="pa-4">
                       <v-text-field
                         :id="card.titleId"
                         v-model="card.title"
@@ -76,7 +89,8 @@
                         class="mb-3"
                         prepend-inner-icon="mdi-format-title"
                         :rules="[validateTitle]"
-                        @input="validateTitle"
+                        :error-messages="card.titleError"
+                        :disabled="processing"
                         hide-details="auto"
                       />
 
@@ -88,7 +102,8 @@
                         density="comfortable"
                         prepend-inner-icon="mdi-link"
                         :rules="[validateYoutubeUrl]"
-                        @input="validateYoutubeUrl"
+                        :error-messages="card.linkError"
+                        :disabled="processing"
                         hide-details="auto"
                       />
                     </v-card-text>
@@ -130,11 +145,13 @@ export default {
   data() {
     return {
       /** @type {Array<Object>} Array of YouTube card data */
-      youtubeCards: [this.createNewCard()],
+      youtubeCards: [],
       /** @type {boolean} Processing state */
       processing: false,
       /** @type {string|null} Error message */
       error: null,
+      /** @type {boolean} Success state */
+      isExtractionSuccess: false,
     };
   },
 
@@ -257,13 +274,24 @@ export default {
   display: flex;
   flex-direction: column;
   position: relative;
-  overflow: hidden; /* Prevent container scroll */
+  overflow: hidden;
 }
 
 .cards-wrapper {
   flex: 1;
   overflow-y: auto;
-  padding-bottom: 80px; /* Space for extract button */
+  padding-bottom: 80px;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background-color: rgb(var(--v-theme-surface-variant));
+  border-radius: 8px;
+  margin: 16px;
 }
 
 .extract-button-wrapper {
@@ -274,6 +302,12 @@ export default {
   padding: 16px;
   background: white;
   border-top: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 -2px 4px rgba(0,0,0,0.05);
+}
+
+.add-more-button {
+  min-width: 140px !important;
+  height: 36px !important;
 }
 
 /* Custom scrollbar styles */
@@ -295,10 +329,6 @@ export default {
   background: #666;
 }
 
-.add-more-button {
-  height: 33px !important;
-}
-
 /* Add responsive styles for mobile */
 @media (max-width: 600px) {
   .extract-button-wrapper {
@@ -308,5 +338,26 @@ export default {
   .cards-wrapper {
     padding-bottom: 70px;
   }
+
+  .empty-state {
+    margin: 8px;
+  }
+}
+
+.youtube-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px !important;
+}
+
+.youtube-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 4px;
+  background: linear-gradient(to bottom, rgb(var(--v-theme-error)), rgb(var(--v-theme-primary)));
+  border-radius: 4px 0 0 4px;
 }
 </style>
