@@ -30,6 +30,9 @@ const customTheme = {
     'border-color': '#E5E7EB',
     'on-success': '#ffffff',
     'on-error': '#ffffff',
+    'on-surface': '#1e293b', // Add this for better text contrast
+    'tooltip-background': '#1e293b', // Add this for tooltip background
+    'tooltip-text': '#000', // Add this for tooltip text
   }
 }
 
@@ -60,6 +63,10 @@ const vuetifyConfig = {
       rounded: 'lg',
       height: 44,
       fontWeight: '600',
+    },
+    VTooltip: {  
+      color: 'tooltip-background',
+      contentClass: 'text-tooltip-text',
     },
   },
 }

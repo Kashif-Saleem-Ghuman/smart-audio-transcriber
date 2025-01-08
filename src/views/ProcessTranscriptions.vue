@@ -85,7 +85,8 @@
                 ></v-textarea>
                 <div class="d-flex align-center">
                   <div class="d-flex align-center gap-2">
-                    <v-tooltip text="Attach transcriptions to analyze" location="top">
+                    <v-tooltip text="Attach transcriptions to analyze" location="top" transition="scale-transition"
+                    >
                       <template v-slot:activator="{ props }">
                         <v-btn
                           v-bind="props"
