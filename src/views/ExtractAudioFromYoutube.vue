@@ -15,30 +15,41 @@
         </v-alert>
 
         <v-card class="youtube-container">
-          <!-- Sticky Add More Button -->
-          <div class="sticky-header">
-            <div class="text-right pa-3 mr-2">
-              <v-btn
-                prepend-icon="mdi-plus"
-                class="add-more-button text-capitalize"
-                :class="
-                  $vuetify.display.smAndDown ? 'text-caption' : 'text-button'
-                "
-                size="x-small"
-                variant="outlined"
-                color="primary"
-                @click="addNewCard"
-                :disabled="youtubeCards.length >= 5"
-              >
-                Add More Links
-              </v-btn>
-            </div>
+          <!-- Sticky Header with Add More and Extract Buttons -->
+          <div class="sticky-header d-flex align-center justify-space-between pa-3">
+            <v-btn
+              prepend-icon="mdi-plus"
+              class="add-more-button text-capitalize"
+              :class="
+                $vuetify.display.smAndDown ? 'text-caption' : 'text-button'
+              "
+              size="x-small"
+              variant="outlined"
+              color="primary"
+              @click="addNewCard"
+              :disabled="youtubeCards.length >= 5"
+            >
+              Add More Links
+            </v-btn>
+
+            <!-- Main Extract Button -->
+            <v-btn
+              color="primary"
+              :loading="processing"
+              :disabled="!isValidForm || youtubeCards.length === 0"
+              @click="processYoutubeLinks"
+              :size="$vuetify.display.smAndDown ? 'small' : 'large'"
+              prepend-icon="mdi-download"
+              class="text-capitalize"
+            >
+              Extract {{ youtubeCards.length > 1 ? 'All' : '' }} {{ youtubeCards.length > 1 ? 'Audios' : 'Audio' }} 
+            </v-btn>
           </div>
 
           <!-- Scrollable Cards Section -->
           <div class="cards-container">
             <v-slide-y-transition group>
-              <div v-for="card in youtubeCards" :key="card.id" class="pa-4">
+              <div v-for="(card, index) in youtubeCards" :key="card.id" class="pa-4">
                 <v-card class="bg-grey-lighten-4" elevation="1">
                   <v-card-title class="d-flex align-center py-4 px-6">
                     <v-icon
@@ -53,7 +64,7 @@
                           ? 'text-subtitle-2 text-wrap'
                           : 'text-h6'
                       "
-                      >Extract Audio from YouTube</span
+                      >YouTube Video {{ youtubeCards.length > 1 ? index + 1 : '' }}</span
                     >
 
                     <v-spacer />
@@ -93,20 +104,6 @@
                       @input="validateYoutubeUrl"
                       hide-details="auto"
                     />
-
-                    <v-btn
-                      block
-                      color="primary"
-                      :size="$vuetify.display.smAndDown ? 'small' : 'x-large'"
-                      :loading="processing"
-                      :disabled="!isValidForm"
-                      @click="processYoutubeLinks"
-                      elevation="2"
-                      class="mt-4"
-                    >
-                      <v-icon start class="me-2">mdi-download</v-icon>
-                      Extract Audio
-                    </v-btn>
                   </v-card-text>
                 </v-card>
               </div>

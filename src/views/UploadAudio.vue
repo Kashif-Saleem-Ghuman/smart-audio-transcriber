@@ -30,7 +30,7 @@
 
     <!-- File List -->
     <div class="upload-container pb-3"
-    :style="audioFiles?.length == 5 ? 'height: calc(100vh - 350px);' : 'height: 100%;'"
+    :class="audioFiles?.length > 3 && !isMobile ? 'upload-container-fixed-height' : ''"
     >
       <!-- File List with fixed height and scroll -->
       <div v-if="audioFiles?.length" class="file-list">
@@ -357,10 +357,13 @@ export default {
 }
 
 .upload-container {
-  height: calc(100vh - 350px);
-  /* Adjust based on your layout */
   display: flex;
   flex-direction: column;
+}
+
+.upload-container-fixed-height{
+  height: calc(100vh - 350px) !important;
+  overflow-y: auto;
 }
 
 .file-list {
