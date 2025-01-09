@@ -205,7 +205,116 @@ export const useAudioStore = defineStore('audio', {
         prompt,
         transcriptionIds
       })
-    }
+    },
+
+    /**
+     * Gets a presigned URL for file upload
+     * @param {string} fileName - Name of the file
+     * @param {string} fileType - MIME type of the file
+     * @returns {Promise<string>} Presigned URL
+     */
+    async getPresignedUrl(fileName, fileType) {
+      const response = await apiClient.get('/audio/presigned-url', {
+        params: { fileName, fileType }
+      });
+      return response.data.url;
+    },
+
+    /**
+     * Uploads file to S3 using presigned URL
+     * @param {string} url - Presigned URL
+     * @param {File} file - File to upload
+     * @returns {Promise<Object>} Upload response
+     */
+    async uploadToS3(url, file) {
+      try {
+        const response = await apiClient.put(url, file, {
+          headers: {
+            'Content-Type': file.type,
+            'Cache-Control': 'max-age=31536000',
+          },
+          // Don't use the base URL for this request since we have a complete URL
+          baseURL: null,
+          // Don't add auth headers for S3 requests
+          skipAuthHeader: true,
+        });
+        return response;
+      } catch (error) {
+        console.error('S3 Error Response:', error);
+        throw new Error(`Failed to upload to S3: ${error.message}`);
+      }
+    },
+
+    /**
+     * Saves audio metadata to backend
+     * @param {Object} payload - Audio metadata
+     * @returns {Promise<Object>} Saved audio data
+     */
+    async saveAudioMetadata(payload) {
+      const response = await apiClient.post('/audio', payload);
+      return response.data;
+    },
+
+    /**
+     * Complete upload process for a single file
+     * @param {File} file - Audio file to upload
+     * @returns {Promise<Object>} Upload result
+     */
+    async uploadSingleFile(file) {
+      try {
+        // Get presigned URL
+        const presignedUrl = await this.getPresignedUrl(file.name, file.type);
+
+        // Upload to S3
+        const s3Response = await this.uploadToS3(presignedUrl, file);
+
+        // Calculate duration (assuming this helper exists in your component)
+        const audioDuration = await this.getAudioDuration(file);
+
+        // Save metadata
+        const payload = {
+          fileName: file.name,
+          time: new Date().toISOString(),
+          status: 'Uploaded',
+          fileUrl: s3Response.url.split('?')[0],
+          duration: audioDuration.toFixed(2),
+          userId: JSON.parse(localStorage.getItem('user')).user.id
+        };
+
+        const savedAudio = await this.saveAudioMetadata(payload);
+
+        // Add to local state
+        this.audioFiles.push({
+          id: savedAudio.id,
+          title: file.name,
+          source: 'upload',
+          createdAt: new Date(),
+          status: 'ready',
+          transcription: null,
+        });
+
+        return savedAudio;
+      } catch (error) {
+        console.error('Upload failed:', error);
+        throw error;
+      }
+    },
+
+    /**
+     * Helper method to get audio duration
+     * @param {File} file - Audio file
+     * @returns {Promise<number>} Duration in seconds
+     */
+    getAudioDuration(file) {
+      return new Promise((resolve, reject) => {
+        const audio = new Audio();
+        audio.addEventListener('loadedmetadata', () => {
+          resolve(audio.duration);
+        });
+        audio.addEventListener('error', reject);
+        audio.src = URL.createObjectURL(file);
+      });
+    },
   },
 
   getters: {

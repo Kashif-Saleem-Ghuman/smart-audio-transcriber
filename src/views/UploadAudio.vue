@@ -1,8 +1,8 @@
 <template>
   <v-container style="position: relative !important;">
     <!-- Error Alert -->
-    <v-alert v-if="error || isFileUploaded" :type="error ? 'error' : 'success'" class="mb-4 alert-icon-centered" closable 
-      @click="() => {
+    <v-alert v-if="error || isFileUploaded" :type="error ? 'error' : 'success'" class="mb-4 alert-icon-centered"
+      closable @click="() => {
         error = null;
         isFileUploaded = false;
       }">
@@ -30,8 +30,7 @@
 
     <!-- File List -->
     <div class="upload-container pb-3"
-    :class="audioFiles?.length > 3 && !isMobile ? 'upload-container-fixed-height' : ''"
-    >
+      :class="audioFiles?.length > 3 && !isMobile ? 'upload-container-fixed-height' : ''">
       <!-- File List with fixed height and scroll -->
       <div v-if="audioFiles?.length" class="file-list">
         <v-card v-for="(file, index) in audioFiles" :key="index" elevation="0" border class="mb-2">
@@ -82,6 +81,10 @@
 
 <script>
 import { useAudioStore } from "@/stores/audioStore";
+import { io } from 'socket.io-client';
+import { baseURL } from '@/api/axios';
+import { storeToRefs } from 'pinia';
+
 
 /**
  * @component UploadAudio
@@ -117,18 +120,22 @@ export default {
             if (!file.type.startsWith("audio/")) {
               return "Please upload audio files only";
             }
-            const sizeInMB = file.size / (1024 * 1024);
-            if (sizeInMB > 20) {
-              return `File ${file.name} (${sizeInMB.toFixed(2)}MB) exceeds 20MB limit`;
-            }
           }
           return true;
         },
       ],
+      /** @type {Socket} Socket connection */
+      socket: null,
+      /** @type {boolean} Flag indicating if file is uploaded */
       isFileUploaded: false,
     };
   },
-
+  /**
+   * Lifecycle hook - Initializes WebSocket connection
+   */
+  created() {
+    this.initializeWebSocket();
+  },
   /**
    * Lifecycle hook - Sets up mobile detection
    */
@@ -136,15 +143,38 @@ export default {
     this.checkMobile();
     window.addEventListener('resize', this.checkMobile);
   },
-
   /**
    * Lifecycle hook - Cleans up event listeners
    */
   beforeUnmount() {
     window.removeEventListener('resize', this.checkMobile);
+    if (this.socket) {
+      this.socket.disconnect();
+    }
   },
-
   methods: {
+    /**
+     * Initializes WebSocket connection
+     */
+    initializeWebSocket() {
+      // Connect to the WebSocket server
+      // use the base url from the apiClient
+      this.socket = io(baseURL)
+
+      // Listen for transcription chunks
+      this.socket.on('transcription_chunk', (chunk) => {
+        console.log("Chunk ---- On ------ ", chunk);
+        this.transcription += chunk + ' ';
+      });
+
+      this.socket.on('connect', () => {
+        console.log('Connected to WebSocket server');
+      });
+
+      this.socket.on('disconnect', () => {
+        console.log('Disconnected from WebSocket server');
+      });
+    },
     /**
      * Checks if the current viewport is mobile width
      * Updates isMobile state based on window width
@@ -163,8 +193,7 @@ export default {
       if (!files) return;
 
       const validFiles = Array.from(files).filter((file) => {
-        const sizeInMB = file.size / (1024 * 1024);
-        return file.type.startsWith("audio/") && sizeInMB <= 20;
+        return file.type.startsWith("audio/");
       });
 
       this.audioFiles = [...this.audioFiles, ...validFiles];
@@ -234,21 +263,26 @@ export default {
     async uploadFiles() {
       if (!this.audioFiles?.length) return;
 
-      const audioStore = useAudioStore();
       this.uploading = true;
       this.error = null;
+      const audioStore = useAudioStore();
 
       try {
-        await audioStore.addAudio(this.audioFiles, 'upload');
-        // show v-alert with success message
-        this.isFileUploaded = true
-        // await audioStore.uploadAudio("/audio-transcription", this.audioFiles);
-        this.audioFiles = [];
+        // Process each file
+        for (const file of this.audioFiles) {
+          await audioStore.uploadSingleFile(file);
+        }
+
+        // Show success message
+        this.isFileUploaded = true;
+        this.audioFiles = []; // Clear the list
+
       } catch (error) {
-        console.error("Upload failed:", error);
-        this.error = error.message || "Failed to upload audio files";
+        console.error('Upload failed:', error);
+        this.error = error.message || 'Failed to upload audio file';
       } finally {
         this.uploading = false;
+        this.uploadProgress = 0;
       }
     },
 
@@ -361,7 +395,7 @@ export default {
   flex-direction: column;
 }
 
-.upload-container-fixed-height{
+.upload-container-fixed-height {
   height: calc(100vh - 350px) !important;
   overflow-y: auto;
 }
@@ -420,9 +454,9 @@ export default {
   overflow: hidden;
 }
 
-.action-btn { 
-    min-width: 164px !important;
-  }
+.action-btn {
+  min-width: 164px !important;
+}
 
 /* Update mobile styles */
 @media (max-width: 600px) {

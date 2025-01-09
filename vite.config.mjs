@@ -47,6 +47,12 @@ export default defineConfig({
     }),
   ],
   define: { 'process.env': {} },
+  optimizeDeps: {
+    include: [
+      '@aws-sdk/client-s3',
+      '@aws-sdk/lib-storage'
+    ]
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
