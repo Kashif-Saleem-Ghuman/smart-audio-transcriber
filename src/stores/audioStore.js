@@ -262,11 +262,14 @@ export const useAudioStore = defineStore('audio', {
      */
     async uploadSingleFile(file) {
       try {
+        console.log('Uploading file:', file);
         // Get presigned URL
         const presignedUrl = await this.getPresignedUrl(file.name, file.type);
+        console.log('Presigned URL:', presignedUrl);
 
         // Upload to S3
         const s3Response = await this.uploadToS3(presignedUrl, file);
+        console.log('S3 Response:', s3Response.url);
 
         // Calculate duration (assuming this helper exists in your component)
         const audioDuration = await this.getAudioDuration(file);
@@ -276,7 +279,7 @@ export const useAudioStore = defineStore('audio', {
           fileName: file.name,
           time: new Date().toISOString(),
           status: 'Uploaded',
-          fileUrl: s3Response.url.split('?')[0],
+          fileUrl: s3Response?.url?.split('?')[0],
           duration: audioDuration.toFixed(2),
           userId: JSON.parse(localStorage.getItem('user')).user.id
         };

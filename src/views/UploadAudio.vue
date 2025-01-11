@@ -128,6 +128,8 @@ export default {
       socket: null,
       /** @type {boolean} Flag indicating if file is uploaded */
       isFileUploaded: false,
+      transcription: '',
+      uploadProgress: 0,
     };
   },
   /**
