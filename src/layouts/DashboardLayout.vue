@@ -26,15 +26,38 @@
       <v-divider></v-divider>
 
       <v-list density="compact" nav>
-        <v-list-item
-          v-for="(item, index) in menuItems"
-          :key="index"
-          :value="item"
-          :to="item.path"
-          :prepend-icon="item.icon"
-          :title="item.title"
-          :class="{ 'bg-primary-lighten-4': isCurrentRoute(item.path) }"
-        ></v-list-item>
+        <template v-for="(item, index) in menuItems" :key="index">
+          <!-- Group Items -->
+          <v-list-group v-if="item.type === 'group'" :value="item.value">
+            <template v-slot:activator="{ props }">
+              <v-list-item
+                v-bind="props"
+                :prepend-icon="item.icon"
+                :title="item.title"
+              ></v-list-item>
+            </template>
+
+            <v-list-item
+              v-for="(child, childIndex) in item.children"
+              :key="childIndex"
+              :value="child.path"
+              :to="child.path"
+              :prepend-icon="child.icon"
+              :title="child.title"
+              :class="{ 'bg-primary-lighten-4': isCurrentRoute(child.path) }"
+            ></v-list-item>
+          </v-list-group>
+
+          <!-- Single Items -->
+          <v-list-item
+            v-else
+            :value="item.path"
+            :to="item.path"
+            :prepend-icon="item.icon"
+            :title="item.title"
+            :class="{ 'bg-primary-lighten-4': isCurrentRoute(item.path) }"
+          ></v-list-item>
+        </template>
       </v-list>
     </v-navigation-drawer>
 
@@ -141,34 +164,59 @@ export default {
       companyLogo: '/path/to/your/logo.png',
       menuItems: [
         {
-          title: 'Listing',
-          icon: 'mdi-view-list',
-          path: '/dashboard/listing'
+          title: 'Files',
+          icon: 'mdi-folder',
+          type: 'group',
+          value: 'files',
+          children: [
+            {
+              title: 'Listing',
+              icon: 'mdi-view-list',
+              path: '/dashboard/listing'
+            }
+          ]
         },
         {
-          title: 'Upload Audios',
-          icon: 'mdi-upload',
-          path: '/dashboard/upload-audio'
-        },
-        {
-          title: 'Extract Audios from YouTube',
-          icon: 'mdi-youtube',
-          path: '/dashboard/extract-audio-from-youtube'
-        },
-        {
-          title: 'Transcribe Audios',
+          title: 'Transcribe',
           icon: 'mdi-microphone',
-          path: '/dashboard/transcribe-audio'
+          type: 'group',
+          value: 'transcribe',
+          children: [
+            {
+              title: 'Upload Audios',
+              icon: 'mdi-upload',
+              path: '/dashboard/upload-audio'
+            },
+            {
+              title: 'Extract Audios from YouTube',
+              icon: 'mdi-youtube',
+              path: '/dashboard/extract-audio-from-youtube'
+            },
+            {
+              title: 'Transcribe Audios',
+              icon: 'mdi-microphone',
+              path: '/dashboard/transcribe-audio'
+            }
+          ]
         },
         {
-          title: 'Process Transcriptions',
-          icon: 'mdi-file-document-outline',
-          path: '/dashboard/process-transcriptions'
+          title: 'Write',
+          icon: 'mdi-pencil',
+          type: 'group',
+          value: 'write',
+          children: [
+            {
+              title: 'Process Transcriptions',
+              icon: 'mdi-file-document-outline',
+              path: '/dashboard/process-transcriptions'
+            }
+          ]
         },
         {
           title: 'Subscription Plans',
           icon: 'mdi-credit-card',
-          path: '/dashboard/subscriptions'
+          path: '/dashboard/subscriptions',
+          type: 'item'
         }
       ]
     }
@@ -211,15 +259,20 @@ export default {
      * @returns {string} Current page title
      */
     getPageTitle() {
-      // Find matching menu item
-      const menuItem = this.menuItems.find(item => item.path === this.$route.path);
+      // if (this.$route.path === '/dashboard') return 'Dashboard';
+      // if (this.$route.path === '/dashboard/profile') return 'User Profile';
+
+      // Search in all menu items and their children
+      for (const item of this.menuItems) {
+        if (item.type === 'group') {
+          const child = item.children.find(child => child.path === this.$route.path);
+          if (child) return child.title;
+        } else if (item.path === this.$route.path) {
+          return item.title;
+        }
+      }
       
-      // Special cases
-      if (this.$route.path === '/dashboard') return 'Dashboard';
-      if (this.$route.path === '/dashboard/profile') return 'User Profile';
-      
-      // Return menu item title or default
-      return menuItem?.title || 'Dashboard';
+      return 'Dashboard';
     }
   },
 

@@ -1,159 +1,257 @@
 <template>
-  <v-container style="position: relative !important;">
-    <!-- Error Alert -->
-    <v-alert v-if="error || isFileUploaded" :type="error ? 'error' : 'success'" class="mb-4 alert-icon-centered"
-      closable @click="() => {
-        error = null;
-        isFileUploaded = false;
-      }">
-      {{ error || 'Files uploaded successfully!' }}
+  <v-container>
+    <!-- Error/Success Alert -->
+    <v-alert
+      v-if="error || isFileUploaded"
+      :type="error ? 'error' : 'success'"
+      :color="error ? 'error-lighten' : 'success-lighten'"
+      class="mb-4 alert-icon-centered"
+      closable
+      @click="
+        () => {
+          error = null;
+          isFileUploaded = false;
+        }
+      "
+    >
+      <template v-slot:prepend>
+        <v-icon
+          :icon="error ? 'mdi-alert-circle' : 'mdi-check-circle'"
+          :color="error ? 'error' : 'success'"
+          start
+        />
+      </template>
+      {{ error || "Files uploaded successfully!" }}
     </v-alert>
 
-    <!-- Upload Card -->
-    <v-card class="upload-zone mb-4" @drop.prevent="handleDrop" @dragover.prevent @dragenter="dragEnter"
-      @dragleave="dragLeave" @click="triggerFileInput" :class="{ 'drag-over': isDragging }" elevation="0" border
-      :ripple="false">
-      <v-card-text class="text-center pa-8">
-        <v-icon size="64" color="primary" class="mb-4">mdi-cloud-upload</v-icon>
-        <div class="text-h6 mb-2">
-          Drag and drop or
-          <span class="text-primary cursor-pointer">browse</span>
-        </div>
-        <div class="text-body-2 text-medium-emphasis">
-          Supports MP3, WAV, M4A, and other audio formats
-        </div>
+    <v-row>
+      <v-col cols="12" class="">
+        <v-card class="upload-container">
+          <!-- Sticky Header -->
+          <v-card-title class="d-flex align-center py-4 px-6">
+            <v-icon
+              icon="mdi-upload"
+              :size="$vuetify.display.smAndDown ? '24' : '32'"
+              class="me-3"
+              color="primary"
+            />
+            <span
+              :class="
+                $vuetify.display.smAndDown ? 'text-subtitle-2' : 'text-h6'
+              "
+            >
+              Add one or more audio Files with optional title to transcribe
+            </span>
+          </v-card-title>
 
-        <!-- Hidden file input -->
-        <input ref="fileInput" type="file" multiple accept="audio/*" class="d-none" @change="handleFileChange" />
-      </v-card-text>
-    </v-card>
+          <v-divider></v-divider>
 
-    <!-- File List -->
-    <div class="upload-container pb-3"
-      :class="audioFiles?.length > 3 && !isMobile ? 'upload-container-fixed-height' : ''">
-      <!-- File List with fixed height and scroll -->
-      <div v-if="audioFiles?.length" class="file-list">
-        <v-card v-for="(file, index) in audioFiles" :key="index" elevation="0" border class="mb-2">
-          <v-card-text class="pa-4">
-            <div class="d-flex align-center justify-space-between w-100">
-              <!-- File Icon and Name Group -->
-              <div class="d-flex align-center file-content">
-                <v-icon color="primary" size="24" class="me-3 flex-shrink-0">mdi-file-music</v-icon>
-                <div class="file-info min-width-0">
-                  <v-tooltip :text="file.name" location="top" open-on-hover
-                    :disabled="!isTextTruncated($refs[`filename-${index}`])">
-                    <template v-slot:activator="{ props }">
-                      <div class="text-subtitle-2 text-truncate" :ref="`filename-${index}`" v-bind="props">
-                        {{ file.name }}
-                      </div>
-                    </template>
-                  </v-tooltip>
-                  <span class="text-caption text-medium-emphasis">
-                    {{ (file.size / (1024 * 1024)).toFixed(2) }} MB
-                  </span>
+          <!-- Add More Button -->
+          <div
+            v-if="audioFiles?.length"
+            class="sticky-header d-flex align-center justify-end pa-3"
+          >
+            <v-btn
+              prepend-icon="mdi-plus"
+              class="add-more-button text-capitalize"
+              :class="
+                $vuetify.display.smAndDown ? 'text-caption' : 'text-button'
+              "
+              size="small"
+              variant="outlined"
+              color="primary"
+              @click="addNewCard"
+              :disabled="audioFiles.length >= 5"
+            >
+              Add More Files ({{ audioFiles.length }}/5)
+            </v-btn>
+          </div>
+
+          <!-- Cards Container -->
+          <div class="cards-container">
+            <!-- Hidden file input -->
+            <input
+              ref="fileInput"
+              type="file"
+              multiple
+              accept="audio/*"
+              class="d-none"
+              @change="handleFileChange"
+            />
+
+            <template v-if="audioFiles.length === 0">
+              <div class="empty-state pa-8 text-center">
+                <v-icon size="64" color="primary" class="mb-4"
+                  >mdi-upload</v-icon
+                >
+                <div class="text-h6 mb-2">No Audio Files Added</div>
+                <div class="text-body-2 text-medium-emphasis mb-4">
+                  Add audio files to upload and transcribe
                 </div>
+                <v-btn
+                  color="primary"
+                  prepend-icon="mdi-plus"
+                  @click="triggerFileInput"
+                >
+                  Add Audio File
+                </v-btn>
               </div>
+            </template>
 
-              <!-- Close Button -->
-              <v-btn icon="mdi-close" variant="text" density="comfortable" color="error" size="small"
-                @click="removeFile(index)" :disabled="file.uploading" class="ms-2 flex-shrink-0" />
+            <template v-else>
+              <div class="cards-wrapper">
+                <v-slide-y-transition group>
+                  <div
+                    v-for="(file, index) in audioFiles"
+                    :key="index"
+                    class="pa-4"
+                  >
+                    <v-card class="bg-grey-lighten-4 audio-card" elevation="1">
+                      <v-card-title class="d-flex align-center py-4 px-6">
+                        <v-icon
+                          icon="mdi-file-music"
+                          :size="24"
+                          class="me-3"
+                          color="primary"
+                        />
+                        <span class="text-subtitle-1"
+                          >Source
+                          {{ audioFiles.length > 1 ? index + 1 : "" }}</span
+                        >
+                        <v-spacer />
+                        <v-btn
+                          icon="mdi-delete"
+                          variant="text"
+                          density="comfortable"
+                          @click="removeFile(index)"
+                          color="error"
+                          :disabled="uploading"
+                        />
+                      </v-card-title>
+
+                      <v-card-text class="pa-4">
+                        <div class="input-fields-wrapper">
+                          <div class="d-flex align-center mb-3">
+                            <v-text-field
+                              v-model="file.title"
+                              label="Title (optional)"
+                              variant="outlined"
+                              density="comfortable"
+                              :disabled="uploading"
+                              hide-details="auto"
+                              class="flex-grow-1"
+                            >
+                              <template #prepend-inner>
+                                <v-icon>mdi-format-title</v-icon>
+                              </template>
+                            </v-text-field>
+                          </div>
+
+                          <div class="d-flex align-center">
+                            <v-file-input
+                              v-model="file.file"
+                              :label="file.name || 'Choose File'"
+                              variant="outlined"
+                              density="comfortable"
+                              accept="audio/*"
+                              :error-messages="file.fileError"
+                              :disabled="uploading"
+                              @change="(e) => handleFileChange(e, index)"
+                              hide-details="auto"
+                              class="flex-grow-1"
+                              prepend-icon=""
+                            >
+                              <template #prepend-inner>
+                                <v-icon>mdi-paperclip</v-icon>
+                              </template>
+                            </v-file-input>
+                          </div>
+
+                          <div
+                            v-if="file.file"
+                            class="file-info d-flex align-center mt-2 ms-6"
+                          >
+                            <div class="text-truncate">{{ file.name }}</div>
+                            <div class="text-caption text-medium-emphasis ms-2">
+                              ({{ (file.size / (1024 * 1024)).toFixed(2) }} MB)
+                            </div>
+                          </div>
+                        </div>
+                      </v-card-text>
+                    </v-card>
+                  </div>
+                </v-slide-y-transition>
+              </div>
+            </template>
+
+            <!-- Fixed Upload Button -->
+            <div v-if="audioFiles.length" class="upload-button-wrapper">
+              <v-btn
+                color="primary"
+                :loading="uploading"
+                :disabled="!isValidForm"
+                @click="uploadFiles"
+                :size="$vuetify.display.smAndDown ? 'small' : 'large'"
+                prepend-icon="mdi-upload"
+                class="text-capitalize"
+                block
+              >
+                Upload {{ audioFiles.length > 1 ? "All" : "" }}
+                {{ audioFiles.length > 1 ? "Audios" : "Audio" }}
+              </v-btn>
             </div>
-
-            <!-- Progress Bar -->
-            <v-progress-linear :model-value="88" color="primary" height="2" class="mt-3"></v-progress-linear>
-          </v-card-text>
+          </div>
         </v-card>
-      </div>
-    </div>
-    <!-- Action Buttons in a fixed position -->
-    <div v-if="audioFiles?.length" class="action-buttons pe-4">
-      <v-btn variant="outlined" color="error" @click="clearFiles" :disabled="uploading" :block="isMobile"
-        :size="isMobile ? undefined : 'large'" class="action-btn text-capitalize">
-        Cancel
-      </v-btn>
-      <v-btn color="primary" :loading="uploading" @click="uploadFiles" :block="isMobile"
-        :size="isMobile ? undefined : 'large'" class="action-btn text-capitalize">
-        {{ audioFiles.length === 1 ? 'Upload Audio' : 'Upload Audios' }}
-      </v-btn>
-    </div>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
 <script>
 import { useAudioStore } from "@/stores/audioStore";
-import { io } from 'socket.io-client';
-import { baseURL } from '@/api/axios';
-import { storeToRefs } from 'pinia';
+import { io } from "socket.io-client";
+import { baseURL } from "@/api/axios";
+import { storeToRefs } from "pinia";
 
-
-/**
- * @component UploadAudio
- * @description Handles audio file uploads with drag and drop functionality
- */
 export default {
   name: "UploadAudio",
 
   data() {
     return {
-      /** @type {File[]} Array of audio files to be uploaded */
       audioFiles: [],
-      /** @type {boolean} Flag indicating if upload is in progress */
       uploading: false,
-      /** @type {string|null} Error message to display */
       error: null,
-      /** @type {boolean} Flag indicating if file is being dragged over drop zone */
-      isDragging: false,
-      /** @type {boolean} Flag indicating if viewport is mobile width */
-      isMobile: false,
-      /** @type {Array<Function>} Array of validation rules for file input */
-      fileRules: [
-        /**
-         * Validates audio files for type and size
-         * @param {File|File[]} v - Single file or array of files to validate
-         * @returns {boolean|string} True if valid, error message if invalid
-         */
-        (v) => {
-          if (!v) return true;
-
-          const files = Array.isArray(v) ? v : [v];
-          for (const file of files) {
-            if (!file.type.startsWith("audio/")) {
-              return "Please upload audio files only";
-            }
-          }
-          return true;
-        },
-      ],
-      /** @type {Socket} Socket connection */
-      socket: null,
-      /** @type {boolean} Flag indicating if file is uploaded */
       isFileUploaded: false,
-      transcription: '',
+      socket: null,
+      transcription: "",
       uploadProgress: 0,
     };
   },
-  /**
-   * Lifecycle hook - Initializes WebSocket connection
-   */
+
   created() {
     this.initializeWebSocket();
   },
-  /**
-   * Lifecycle hook - Sets up mobile detection
-   */
+
   mounted() {
     this.checkMobile();
-    window.addEventListener('resize', this.checkMobile);
+    window.addEventListener("resize", this.checkMobile);
   },
-  /**
-   * Lifecycle hook - Cleans up event listeners
-   */
+
   beforeUnmount() {
-    window.removeEventListener('resize', this.checkMobile);
+    window.removeEventListener("resize", this.checkMobile);
     if (this.socket) {
       this.socket.disconnect();
     }
   },
+
+  computed: {
+    isValidForm() {
+      return (
+        this.audioFiles.length > 0 && this.audioFiles.every((file) => file.file)
+      );
+    },
+  },
+
   methods: {
     /**
      * Initializes WebSocket connection
@@ -161,23 +259,24 @@ export default {
     initializeWebSocket() {
       // Connect to the WebSocket server
       // use the base url from the apiClient
-      this.socket = io(baseURL)
+      this.socket = io(baseURL);
 
       // Listen for transcription chunks
-      this.socket.on('transcription_chunk', (chunk) => {
+      this.socket.on("transcription_chunk", (chunk) => {
         console.log("Chunk ---- On ------ ", chunk);
-        this.transcription += chunk + ' ';
+        this.transcription += chunk + " ";
       });
 
-      this.socket.on('connect', () => {
-        console.log('Connected to WebSocket server');
+      this.socket.on("connect", () => {
+        console.log("Connected to WebSocket server");
       });
 
-      this.socket.on('disconnect', () => {
-        console.log('Disconnected from WebSocket server');
+      this.socket.on("disconnect", () => {
+        console.log("Disconnected from WebSocket server");
       });
     },
-    /**
+
+     /**
      * Checks if the current viewport is mobile width
      * Updates isMobile state based on window width
      */
@@ -185,327 +284,197 @@ export default {
       this.isMobile = window.innerWidth < 600;
     },
 
-    /**
-     * Handles file selection from the file input
-     * Filters and adds valid audio files to the list
-     * @param {Event} event - File input change event
-     */
-    handleFileChange(event) {
-      const files = event.target.files;
-      if (!files) return;
-
-      const validFiles = Array.from(files).filter((file) => {
-        return file.type.startsWith("audio/");
-      });
-
-      this.audioFiles = [...this.audioFiles, ...validFiles];
-      event.target.value = "";
-    },
-
-    /**
-     * Handles files dropped into the drop zone
-     * Filters and adds valid audio files to the list
-     * @param {DragEvent} e - Drop event
-     */
-    handleDrop(e) {
-      this.isDragging = false;
-      const files = Array.from(e.dataTransfer.files).filter((file) =>
-        file.type.startsWith("audio/")
-      );
-
-      if (files.length) {
-        const validFiles = files.filter((file) => {
-          const sizeInMB = file.size / (1024 * 1024);
-          return file.type.startsWith("audio/") && sizeInMB <= 20;
+    addNewCard() {
+      if (this.audioFiles.length < 5) {
+        this.audioFiles.push({
+          id: `file-${Math.random().toString(36).substr(2, 9)}`,
+          file: null,
+          name: "",
+          size: 0,
+          title: "",
+          fileError: null,
         });
-        this.audioFiles = [...this.audioFiles, ...validFiles];
       }
     },
 
-    /**
-     * Sets dragging state when files are dragged over the drop zone
-     */
-    dragEnter() {
-      this.isDragging = true;
-    },
-
-    /**
-     * Handles drag leave events for the drop zone
-     * Only updates state if cursor leaves the drop zone completely
-     * @param {DragEvent} e - Drag leave event
-     */
-    dragLeave(e) {
-      if (!e.relatedTarget || !e.currentTarget.contains(e.relatedTarget)) {
-        this.isDragging = false;
-      }
-    },
-
-    /**
-     * Removes a file from the audio files list
-     * @param {number} index - Index of the file to remove
-     */
     removeFile(index) {
-      if (!this.audioFiles[index].uploading) {
-        this.audioFiles.splice(index, 1);
+      this.audioFiles.splice(index, 1);
+    },
+
+    handleFileChange(event, index) {
+      if (!event) {
+        this.audioFiles[index].file = null;
+        this.audioFiles[index].name = "";
+        this.audioFiles[index].size = 0;
+        this.audioFiles[index].fileError = null;
+        return;
       }
+
+      const file = event instanceof File ? event : event.target.files?.[0];
+      if (!file) return;
+
+      // if (file.size > 20 * 1024 * 1024) {
+      //   this.audioFiles[index].fileError = "File size should not exceed 20MB";
+      //   this.audioFiles[index].file = null;
+      //   this.audioFiles[index].name = "";
+      //   this.audioFiles[index].size = 0;
+      // } 
+        this.audioFiles[index].file = file;
+        this.audioFiles[index].name = file.name;
+        this.audioFiles[index].size = file.size;
+        this.audioFiles[index].fileError = null;
     },
 
-    /**
-     * Clears all files from the audio files list
-     */
-    clearFiles() {
-      this.audioFiles = [];
+    triggerFileInput() {
+      this.addNewCard();
     },
 
-    /**
-     * Uploads all audio files to the server
-     * Updates state based on upload success/failure
-     * @returns {Promise<void>}
-     */
     async uploadFiles() {
-      if (!this.audioFiles?.length) return;
+      if (!this.isValidForm) return;
 
       this.uploading = true;
       this.error = null;
       const audioStore = useAudioStore();
 
       try {
-        // Process each file
         for (const file of this.audioFiles) {
-          await audioStore.uploadSingleFile(file);
+          console.log("Files being uploaded", this.audioFiles);
+          console.log("single file being uploaded", file);
+          await audioStore.uploadSingleFile(file.file, file.title);
         }
-
-        // Show success message
         this.isFileUploaded = true;
-        this.audioFiles = []; // Clear the list
-
+        this.audioFiles = [];
       } catch (error) {
-        console.error('Upload failed:', error);
-        this.error = error.message || 'Failed to upload audio file';
+        console.error("Upload failed:", error);
+        this.error = error.message || "Failed to upload audio file";
       } finally {
         this.uploading = false;
         this.uploadProgress = 0;
       }
-    },
-
-    /**
-     * Triggers click event on the hidden file input
-     */
-    triggerFileInput() {
-      this.$refs.fileInput.click();
-    },
-
-    /**
-     * Checks if text element content is truncated
-     * @param {HTMLElement} element - DOM element to check
-     * @returns {boolean} True if text is truncated
-     */
-    isTextTruncated(element) {
-      if (!element) return false;
-      return element.scrollWidth > element.clientWidth;
     },
   },
 };
 </script>
 
 <style scoped>
-.upload-zone {
-  border: none;
-  background-image: repeating-linear-gradient(to right,
-      rgb(var(--v-theme-primary)) 0,
-      rgb(var(--v-theme-primary)) 12px,
-      transparent 8px,
-      transparent 16px),
-    repeating-linear-gradient(to bottom,
-      rgb(var(--v-theme-primary)) 0,
-      rgb(var(--v-theme-primary)) 12px,
-      transparent 8px,
-      transparent 16px),
-    repeating-linear-gradient(to right,
-      rgb(var(--v-theme-primary)) 0,
-      rgb(var(--v-theme-primary)) 12px,
-      transparent 8px,
-      transparent 16px),
-    repeating-linear-gradient(to bottom,
-      rgb(var(--v-theme-primary)) 0,
-      rgb(var(--v-theme-primary)) 12px,
-      transparent 8px,
-      transparent 16px);
-  background-position: 0 0, 0 0, 0 100%, 100% 0;
-  background-size: 100% 2px, 2px 100%, 100% 2px, 2px 100%;
-  background-repeat: no-repeat;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-.upload-zone.drag-over {
-  background-color: rgb(var(--v-theme-surface-variant));
-  border-style: dashed;
-  border-width: 2px;
-  /* Make dashes longer */
-  border-image: repeating-linear-gradient(to right,
-      rgb(var(--v-theme-primary)) 0,
-      rgb(var(--v-theme-primary)) 15px,
-      transparent 15px,
-      transparent 25px) 2;
-}
-
-.upload-zone:hover {
-  background-color: rgb(var(--v-theme-surface-variant));
-}
-
-.cursor-pointer {
-  cursor: pointer;
-}
-
-.file-item {
-  border-bottom: 1px solid rgb(var(--v-theme-border-color));
-}
-
-.file-item:last-child {
-  border-bottom: none;
-}
-
-.file-list {
-  max-height: 60vh;
-  overflow-y: auto;
-}
-
-.gap-2 {
-  gap: 8px;
-}
-
-:deep(.v-card-text) {
-  padding: 12px 16px !important;
-}
-
-:deep(.v-progress-linear) {
-  margin-bottom: -2px;
-}
-
-.text-truncate {
-  max-width: 300px;
-
-  @media (max-width: 600px) {
-    max-width: 200px;
-  }
-}
-
 .upload-container {
+  position: relative;
+  height: calc(100vh - 120px);
   display: flex;
   flex-direction: column;
 }
 
-.upload-container-fixed-height {
-  height: calc(100vh - 350px) !important;
-  overflow-y: auto;
+.sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: white;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-.file-list {
+.cards-container {
   flex: 1;
-  overflow-y: auto;
-  padding-bottom: 70px;
-  /* Space for buttons */
-}
-
-.action-buttons {
-  position: absolute;
-  bottom: -50px;
-  right: 0;
-  padding: 16px 0;
-  width: 100%;
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-}
-
-/* Add smooth scrollbar styling */
-.file-list::-webkit-scrollbar {
-  width: 8px;
-}
-
-.file-list::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.file-list::-webkit-scrollbar-thumb {
-  background-color: rgba(var(--v-theme-primary), 0.1);
-  border-radius: 4px;
-}
-
-.file-list::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(var(--v-theme-primary), 0.2);
-}
-
-/* Ensure proper spacing */
-.v-card.mb-2:last-child {
-  margin-bottom: 0;
-}
-
-.file-content {
-  flex: 1;
-  min-width: 0;
-  margin-right: 8px;
-}
-
-.file-info {
   display: flex;
   flex-direction: column;
-  min-width: 0;
+  position: relative;
   overflow: hidden;
 }
 
-.action-btn {
-  min-width: 164px !important;
+.cards-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 80px;
 }
 
-/* Update mobile styles */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background-color: rgb(var(--v-theme-surface-variant));
+  border-radius: 8px;
+  margin: 16px;
+}
+
+.upload-button-wrapper {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px;
+  background: white;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.add-more-button {
+  min-width: 140px !important;
+  height: 36px !important;
+}
+
+.audio-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px !important;
+}
+
+.audio-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 4px;
+  background: rgb(var(--v-theme-primary));
+  border-radius: 4px 0 0 4px;
+}
+
+.file-info {
+  padding: 8px;
+  background: rgba(var(--v-theme-primary), 0.05);
+  border-radius: 6px;
+}
+
+/* Custom scrollbar styles */
+.cards-wrapper::-webkit-scrollbar {
+  width: 8px;
+}
+
+.cards-wrapper::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.cards-wrapper::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.cards-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #666;
+}
+
+/* Mobile styles */
 @media (max-width: 600px) {
-  :deep(.v-card-text) {
-    padding: 12px !important;
+  .upload-button-wrapper {
+    padding: 12px;
   }
 
-  .text-truncate {
-    max-width: calc(100vw - 120px);
+  .cards-wrapper {
+    padding-bottom: 70px;
   }
 
-  /* Ensure close button stays visible */
-  .v-btn.v-btn--size-small {
-    min-width: 32px !important;
-    padding: 0 !important;
+  .empty-state {
+    margin: 8px;
   }
+}
 
-  .file-content {
-    margin-right: 4px;
-  }
+.input-fields-wrapper {
+  padding: 0 8px;
+}
 
-  .action-buttons {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 0 16px 16px 16px;
-    z-index: 100;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
-
-  .action-btn {
-    width: 100%;
-    height: 40px;
-  }
-
-  /* Adjust container padding to account for fixed buttons */
-  .upload-container {
-    height: calc(100vh - 360px);
-    padding-bottom: 80px;
-  }
-
-  /* Ensure content doesn't hide behind buttons */
-  .file-list {
-    padding-bottom: 100px;
-  }
+:deep(.v-card-text) {
+  padding: 16px 8px !important;
 }
 </style>

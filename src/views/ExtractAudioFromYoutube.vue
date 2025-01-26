@@ -26,7 +26,7 @@
     </v-alert>
 
     <v-row>
-      <v-col cols="12" md="8" class="mx-auto">
+      <v-col cols="12">
         <v-card class="youtube-container">
           <!-- Sticky Header -->
           <v-card-title class="d-flex align-center py-4 px-6">

@@ -15,9 +15,9 @@ import * as directives from 'vuetify/directives'
 const customTheme = {
   dark: false,
   colors: {
-    primary: '#2563eb',
+    primary: '#7C3AED',
     secondary: '#475569',
-    accent: '#0ea5e9',
+    accent: '#9F67FF',
     success: '#22c55e',
     'success-lighten': '#dcfce7',
     error: '#ef4444',
@@ -30,9 +30,9 @@ const customTheme = {
     'border-color': '#E5E7EB',
     'on-success': '#ffffff',
     'on-error': '#ffffff',
-    'on-surface': '#1e293b', // Add this for better text contrast
-    'tooltip-background': '#1e293b', // Add this for tooltip background
-    'tooltip-text': '#000', // Add this for tooltip text
+    'on-surface': '#1e293b',
+    'tooltip-background': '#1e293b',
+    'tooltip-text': '#000',
   }
 }
 
