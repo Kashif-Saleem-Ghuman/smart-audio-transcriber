@@ -318,6 +318,106 @@ export const useAudioStore = defineStore('audio', {
         audio.src = URL.createObjectURL(file);
       });
     },
+
+    /**
+     * Gets available language options with their links for a YouTube video
+     */
+    async getLangOptionsWithLink(videoId) {
+      const videoPageResponse = await fetch("https://www.youtube.com/watch?v=" + videoId);
+      const videoPageHtml = await videoPageResponse.text();
+      const splittedHtml = videoPageHtml.split('"captions":');
+
+      if (splittedHtml.length < 2) return;
+
+      const captionsJson = JSON.parse(splittedHtml[1].split(',"videoDetails')[0].replace('\n', ''));
+      const captionTracks = captionsJson.playerCaptionsTracklistRenderer.captionTracks;
+
+      return captionTracks.map(track => ({
+        language: track.name.simpleText,
+        link: track.baseUrl
+      }));
+    },
+
+    /**
+     * Gets raw transcript data from a caption track link
+     */
+    async getRawTranscript(link) {
+      const transcriptPageResponse = await fetch(link);
+      const transcriptPageXml = await transcriptPageResponse.text();
+
+      // Use browser's built-in DOMParser instead of JSDOM
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(transcriptPageXml, "text/xml");
+      const textNodes = xmlDoc.getElementsByTagName("text");
+
+      return Array.from(textNodes).map(node => ({
+        start: node.getAttribute("start"),
+        duration: node.getAttribute("dur"),
+        text: node.textContent
+      }));
+    },
+
+    /**
+     * Gets complete transcript text from a language option
+     */
+    async getTranscript(langOption) {
+      const rawTranscript = await this.getRawTranscript(langOption.link);
+      return rawTranscript.map(item => item.text).join(" ");
+    },
+
+    /**
+     * Cleans and formats transcript text
+     */
+    cleanTranscript(text) {
+      let cleaned = text
+        .replace(/&#39;/g, "'")
+        .replace(/\(.*?\)/g, '')
+        .replace(/\n/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+      let sentences = cleaned.split(/[.!?]+/).map(sentence => 
+        sentence.trim()
+      ).filter(sentence => 
+        sentence && sentence.length > 10
+      );
+
+      return sentences.map(sentence => 
+        sentence.charAt(0).toUpperCase() + 
+        sentence.slice(1) + 
+        '.'
+      ).join('\n');
+    },
+
+    /**
+     * Extracts transcript from YouTube video
+     */
+    async extractYoutubeTranscript(videoId) {
+      console.log("Processing video ID:", videoId);
+      
+      try {
+        // Get language options with links
+        const langOptions = await this.getLangOptionsWithLink(videoId);
+        if (!langOptions || langOptions.length === 0) {
+          throw new Error("No captions available for this video.");
+        }
+        console.log("Available languages:", langOptions);
+
+        // Select first language option (usually English)
+        const selectedLangOption = langOptions[0];
+        console.log("Selected language:", selectedLangOption);
+
+        // Get transcript
+        const transcript = await this.getTranscript(selectedLangOption);
+        const cleanedTranscript = this.cleanTranscript(transcript);
+        console.log("Cleaned transcript:", cleanedTranscript);
+
+        return cleanedTranscript;
+      } catch (error) {
+        console.error("Error extracting transcript:", error);
+        throw error;
+      }
+    },
   },
 
   getters: {

@@ -149,6 +149,8 @@
  * @component ExtractAudioFromYoutube
  * @description Handles YouTube video audio extraction functionality
  */
+import { useAudioStore } from '@/stores/audioStore';
+
 export default {
   name: "ExtractAudioFromYoutube",
 
@@ -249,15 +251,39 @@ export default {
 
       this.processing = true;
       this.error = null;
+      const audioStore = useAudioStore();
 
       try {
-        console.log("Processing links:", this.youtubeCards);
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        console.log("Processing YouTube cards:", this.youtubeCards);
+        
+        for (const card of this.youtubeCards) {
+          // Extract video ID from YouTube URL
+          const videoId = this.extractVideoId(card.link);
+          console.log("Extracted video ID:", videoId);
+          
+          if (!videoId) {
+            throw new Error(`Invalid YouTube URL: ${card.link}`);
+          }
+
+          const transcript = await audioStore.extractYoutubeTranscript(videoId);
+          console.log("Extracted transcript for video:", card.title);
+          // console.log("Transcript:", transcript);
+        }
+
+        this.isExtractionSuccess = true;
       } catch (error) {
+        console.error("Error processing YouTube links:", error);
         this.error = error.message || "Failed to process YouTube links";
       } finally {
         this.processing = false;
       }
+    },
+
+    // Add this helper method to extract video ID
+    extractVideoId(url) {
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+      const match = url.match(regExp);
+      return (match && match[2].length === 11) ? match[2] : null;
     },
   },
 };
