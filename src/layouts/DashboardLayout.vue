@@ -209,6 +209,11 @@ export default {
               title: 'Process Transcriptions',
               icon: 'mdi-file-document-outline',
               path: '/dashboard/process-transcriptions'
+            },
+            {
+              title: 'Blog Articles',
+              icon: 'mdi-post-outline',
+              path: '/dashboard/blog-articles'
             }
           ]
         },
