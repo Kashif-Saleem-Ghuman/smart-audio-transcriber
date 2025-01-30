@@ -3,8 +3,40 @@
     <!-- Chat History Drawer -->
     <v-navigation-drawer permanent width="300" class="chat-drawer">
       <v-list>
-        <v-list-item v-for="(chat, index) in chatHistory" :key="index" :title="chat.title"
-          @click="loadChat(chat)"></v-list-item>
+        <!-- New Chat Button -->
+        <v-list-item
+          prepend-icon="mdi-plus"
+          title="New Chat"
+          color="primary"
+          class="mb-2"
+          @click="startNewChat"
+        ></v-list-item>
+
+        <v-divider class="mb-2"></v-divider>
+
+        <!-- Chat History Items -->
+        <v-list-item
+          v-for="(chat, index) in chatHistory"
+          :key="index"
+          :active="currentChatId === chat.id"
+          class="chat-history-item"
+          @click="loadChat(chat)"
+        >
+          <v-tooltip
+            :text="chat.title"
+            location="right"
+            :disabled="chat.title.length <= 25"
+          >
+            <template v-slot:activator="{ props }">
+              <v-list-item-title 
+                class="text-truncate"
+                v-bind="props"
+              >
+                {{ chat.title }}
+              </v-list-item-title>
+            </template>
+          </v-tooltip>
+        </v-list-item>
       </v-list>
     </v-navigation-drawer>
 
@@ -13,30 +45,94 @@
       <v-card v-if="!outline" class="pa-6">
         <h2 class="text-h5 mb-6">Generate Blog Article</h2>
 
-        <v-form @submit.prevent="handleGenerateOutline">
-          <v-text-field v-model="blogTitle" label="Blog Title" placeholder="How to make money Farming?"
-            class="mb-4"></v-text-field>
+        <v-form 
+          @submit.prevent="handleGenerateOutline"
+          v-model="formValid"
+        >
+          <v-text-field 
+            v-model="blogTitle" 
+            label="Blog Title" 
+            placeholder="How to make money Farming?"
+            class="mb-4"
+            :rules="requiredRule"
+            required
+          >
+            <template v-slot:label>
+              Blog Title <span class="text-red">*</span>
+            </template>
+          </v-text-field>
 
-          <v-select v-model="selectedTranscripts" :items="availableTranscripts" label="Attach Transcriptions" multiple
-            chips class="mb-4">
+          <v-select 
+            v-model="selectedTranscripts" 
+            :items="availableTranscripts" 
+            label="Attach Transcriptions" 
+            multiple
+            chips 
+            class="mb-4"
+            :rules="requiredRule"
+            required
+          >
+            <template v-slot:label>
+              Attach Transcriptions <span class="text-red">*</span>
+            </template>
             <template v-slot:selection="{ item }">
               <v-chip>{{ item.title }}</v-chip>
             </template>
           </v-select>
 
-          <v-select v-model="articleLength" :items="['Short', 'Medium', 'Long']" label="Article Length"
-            class="mb-4"></v-select>
+          <v-select 
+            v-model="articleLength" 
+            :items="['Short', 'Medium', 'Long']" 
+            label="Article Length"
+            class="mb-4"
+            :rules="requiredRule"
+            required
+          >
+            <template v-slot:label>
+              Article Length <span class="text-red">*</span>
+            </template>
+          </v-select>
 
-          <v-select v-model="toneOfVoice" :items="['Professional', 'Casual', 'Academic']" label="Tone of Voice"
-            class="mb-4"></v-select>
+          <v-select 
+            v-model="toneOfVoice" 
+            :items="['Professional', 'Casual', 'Academic']" 
+            label="Tone of Voice"
+            class="mb-4"
+            :rules="requiredRule"
+            required
+          >
+            <template v-slot:label>
+              Tone of Voice <span class="text-red">*</span>
+            </template>
+          </v-select>
 
-          <v-select v-model="pointOfView" :items="['First Person', 'Second Person', 'Third Person']"
-            label="Point of View" class="mb-4"></v-select>
+          <v-select 
+            v-model="pointOfView" 
+            :items="['First Person', 'Second Person', 'Third Person']"
+            label="Point of View" 
+            class="mb-4"
+            :rules="requiredRule"
+            required
+          >
+            <template v-slot:label>
+              Point of View <span class="text-red">*</span>
+            </template>
+          </v-select>
 
-          <v-textarea v-model="additionalInstructions" label="Additional Instructions to AI" rows="3"
-            class="mb-4"></v-textarea>
+          <v-textarea 
+            v-model="additionalInstructions" 
+            label="Additional Instructions to AI" 
+            rows="3"
+            class="mb-4"
+          ></v-textarea>
 
-          <v-btn color="primary" block :loading="loading" type="submit">
+          <v-btn 
+            color="primary" 
+            block 
+            :loading="loading" 
+            type="submit"
+            :disabled="!formValid"
+          >
             Generate Outline
           </v-btn>
         </v-form>
@@ -188,10 +284,7 @@ export default {
       toneOfVoice: '',
       pointOfView: '',
       additionalInstructions: '',
-      chatHistory: [
-        { title: 'First Chat heading' },
-        { title: 'Second Chat heading' }
-      ],
+      chatHistory: [],
       headingTypes: [
         { title: 'Heading 1', value: 'H1' },
         { title: 'Heading 2', value: 'H2' },
@@ -204,7 +297,13 @@ export default {
         { title: 'Heading 3', value: 'H3' },
         { title: 'Heading 4', value: 'H4' },
         { title: 'Paragraph', value: 'P' }
-      ]
+      ],
+      currentChatId: null,
+      defaultChatTitle: 'New Chat',
+      formValid: false,
+      requiredRule: [
+        v => !!v || 'This field is required'
+      ],
     }
   },
 
@@ -223,7 +322,69 @@ export default {
   methods: {
     ...mapActions(useBlogStore, ['generateOutline', 'generateArticle']),
 
+    startNewChat() {
+      const blogStore = useBlogStore()
+      const newChat = {
+        id: Date.now(),
+        title: this.defaultChatTitle,
+        outline: null,
+        article: null,
+        settings: {
+          blogTitle: '',
+          selectedTranscripts: [],
+          articleLength: '',
+          toneOfVoice: '',
+          pointOfView: '',
+          additionalInstructions: ''
+        }
+      }
+      
+      this.chatHistory.unshift(newChat)
+      this.loadChat(newChat)
+      // Reset the store state and form validation
+      blogStore.$patch({
+        outline: null,
+        article: null
+      })
+      this.formValid = false
+    },
+
+    loadChat(chat) {
+      const blogStore = useBlogStore()
+      this.currentChatId = chat.id
+      
+      // Reset form fields
+      this.blogTitle = chat.settings.blogTitle || ''
+      this.selectedTranscripts = chat.settings.selectedTranscripts || []
+      this.articleLength = chat.settings.articleLength || ''
+      this.toneOfVoice = chat.settings.toneOfVoice || ''
+      this.pointOfView = chat.settings.pointOfView || ''
+      this.additionalInstructions = chat.settings.additionalInstructions || ''
+      
+      // Load outline and article if they exist
+      blogStore.$patch({
+        outline: chat.outline,
+        article: chat.article
+      })
+    },
+
     async handleGenerateOutline() {
+      const currentChat = this.chatHistory.find(chat => chat.id === this.currentChatId)
+      if (currentChat) {
+        // Update chat title with blog title
+        currentChat.title = this.blogTitle || this.defaultChatTitle
+        
+        // Save current settings
+        currentChat.settings = {
+          blogTitle: this.blogTitle,
+          selectedTranscripts: this.selectedTranscripts,
+          articleLength: this.articleLength,
+          toneOfVoice: this.toneOfVoice,
+          pointOfView: this.pointOfView,
+          additionalInstructions: this.additionalInstructions
+        }
+      }
+
       await this.generateOutline({
         title: this.blogTitle,
         transcripts: this.selectedTranscripts,
@@ -232,14 +393,37 @@ export default {
         pov: this.pointOfView,
         instructions: this.additionalInstructions
       })
+
+      // Save generated outline to current chat
+      if (currentChat) {
+        currentChat.outline = this.outline
+      }
     },
 
     async handleGenerateArticle() {
       await this.generateArticle()
+      
+      // Save generated article to current chat
+      const currentChat = this.chatHistory.find(chat => chat.id === this.currentChatId)
+      if (currentChat) {
+        currentChat.article = this.article
+      }
     },
 
     goBackToInput() {
-      this.outline = null
+      const blogStore = useBlogStore()
+      // Update the store state
+      blogStore.$patch({
+        outline: null,
+        article: null
+      })
+      
+      // Update the current chat's outline
+      const currentChat = this.chatHistory.find(chat => chat.id === this.currentChatId)
+      if (currentChat) {
+        currentChat.outline = null
+        currentChat.article = null
+      }
     },
 
     addSection(type = 'H2') {
@@ -283,11 +467,12 @@ export default {
       a.download = 'article.html'
       a.click()
       window.URL.revokeObjectURL(url)
-    },
-
-    loadChat(chat) {
-      // Implementation for loading chat history
     }
+  },
+
+  created() {
+    // Start with a new chat when component is created
+    this.startNewChat()
   }
 }
 </script>
@@ -401,5 +586,23 @@ export default {
 .chosen {
   opacity: 0.5;
   background: #c8ebfb;
+}
+
+.chat-history-item {
+  margin-bottom: 4px;
+}
+
+.chat-history-item :deep(.v-list-item-title) {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.v-navigation-drawer :deep(.v-list-item--active) {
+  background-color: rgb(var(--v-theme-primary-lighten-1));
+}
+
+.text-red {
+  color: rgb(var(--v-theme-error));
 }
 </style>
