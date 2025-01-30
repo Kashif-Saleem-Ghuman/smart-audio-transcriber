@@ -168,8 +168,8 @@
                       class="drag-handle me-2"
                     ></v-btn>
                     <v-card class="element-card flex-grow-1 me-2">
-                      <v-card-item class="d-flex align-center pa-2">
-                        <div class="d-flex align-center w-100">
+                      <v-card-item class="d-flex align-center pa-2 custom-width">
+                        <div class="d-flex align-center">
                           <v-select 
                             v-model="section.level" 
                             :items="headingTypes" 
@@ -217,7 +217,7 @@
                             class="subsection-drag-handle me-2"
                           ></v-btn>
                           <v-card class="element-card flex-grow-1 me-2">
-                            <v-card-item class="d-flex align-center pa-2">
+                            <v-card-item class="d-flex align-center pa-2 custom-width">
                               <div class="d-flex align-center flex-grow-1">
                                 <v-select 
                                   v-model="subsection.level" 
@@ -226,7 +226,6 @@
                                   density="compact"
                                   class="heading-type-select me-4" 
                                   variant="plain"
-                                  style="min-width: 120px; max-width: 120px;"
                                 ></v-select>
                                 <v-text-field 
                                   v-model="subsection.title" 
@@ -647,6 +646,7 @@ export default {
   background-color: white;
   border: 1px solid rgba(0, 0, 0, 0.08);
   transition: all 0.2s ease;
+  width: 100%;
 }
 
 .element-card:hover {
@@ -723,6 +723,7 @@ export default {
   background-color: white;
   border: 1px solid rgba(0, 0, 0, 0.08);
   transition: all 0.2s ease;
+  width: 100%;
 }
 
 .element-card:hover {
@@ -748,5 +749,21 @@ export default {
   padding-top: 8px;
   padding-bottom: 8px;
   width: 100%;
+}
+
+:deep(.v-field__input) {
+  white-space: normal !important;
+  word-wrap: break-word !important;
+}
+
+:deep(.v-text-field input) {
+  white-space: normal !important;
+  word-wrap: break-word !important;
+}
+</style>
+
+<style>
+.custom-width .v-card-item__content{
+  width: 100% !important;
 }
 </style>
