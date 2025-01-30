@@ -401,12 +401,32 @@ export default {
     },
 
     async handleGenerateArticle() {
-      await this.generateArticle()
+      // Format the outline data
+      const formattedOutline = this.outline.sections.reduce((acc, section, index) => {
+        // Create array of all elements in order (section title + subsections)
+        const orderedElements = [
+          {
+            level: section.level,
+            title: section.title
+          },
+          ...section.subsections
+        ].map(element => `${element.level}: ${element.title}`);
+
+        acc[`Section${index + 1}`] = {
+          name: `Section ${index + 1}: ${section.title}`,
+          Outline: orderedElements
+        };
+        console.log("write article output::::", acc)
+        return acc;
+      }, {});
+
+      // Call generateArticle with formatted outline
+      await this.generateArticle(formattedOutline);
       
       // Save generated article to current chat
-      const currentChat = this.chatHistory.find(chat => chat.id === this.currentChatId)
+      const currentChat = this.chatHistory.find(chat => chat.id === this.currentChatId);
       if (currentChat) {
-        currentChat.article = this.article
+        currentChat.article = this.article;
       }
     },
 
