@@ -161,56 +161,92 @@
               <v-card class="section-card mb-4">
                 <v-card-item>
                   <div class="d-flex align-center">
-                    <!-- Add drag handle -->
                     <v-btn 
                       icon="mdi-drag" 
                       variant="text" 
                       size="small" 
                       class="drag-handle me-2"
                     ></v-btn>
-                    <v-select 
-                      v-model="section.level" 
-                      :items="headingTypes" 
-                      hide-details 
-                      density="compact"
-                      class="heading-type-select" 
-                      variant="plain"
-                    ></v-select>
-                    <v-text-field v-model="section.title" hide-details density="compact" variant="underlined"
-                      class="flex-grow-1"></v-text-field>
-                    <v-btn icon="mdi-delete" variant="text" size="small" color="error" class="ms-2"
-                      @click="removeSection(index)"></v-btn>
+                    <v-card class="element-card flex-grow-1 me-2">
+                      <v-card-item class="d-flex align-center pa-2">
+                        <div class="d-flex align-center w-100">
+                          <v-select 
+                            v-model="section.level" 
+                            :items="headingTypes" 
+                            hide-details 
+                            density="compact"
+                            class="heading-type-select" 
+                            variant="plain"
+                            style="min-width: 120px; width: 120px;"
+                          ></v-select>
+                          <v-text-field 
+                            v-model="section.title" 
+                            hide-details 
+                            density="compact" 
+                            variant="underlined"
+                            class="title-field"
+                            placeholder="Enter title"
+                          ></v-text-field>
+                        </div>
+                      </v-card-item>
+                    </v-card>
+                    <v-btn 
+                      icon="mdi-close" 
+                      variant="text" 
+                      size="small" 
+                      color="error" 
+                      class="ms-2"
+                      @click="removeSection(index)"
+                    ></v-btn>
                   </div>
 
-                  <!-- Wrap subsections in draggable -->
+                  <!-- Subsections -->
                   <draggable 
                     v-model="section.subsections" 
                     item-key="id"
                     handle=".subsection-drag-handle"
-                    class="dragArea"
+                    class="dragArea mt-3"
                   >
                     <template #item="{element: subsection, index: subIndex}">
                       <div class="subsection-item">
                         <div class="d-flex align-center">
-                          <!-- Add drag handle for subsections -->
                           <v-btn 
                             icon="mdi-drag" 
                             variant="text" 
                             size="small" 
                             class="subsection-drag-handle me-2"
                           ></v-btn>
-                          <v-select 
-                            v-model="subsection.level" 
-                            :items="headingTypes" 
-                            hide-details 
-                            density="compact"
-                            class="heading-type-select" 
-                            variant="plain"
-                          ></v-select>
-                          <v-text-field v-model="subsection.title" hide-details density="compact" variant="underlined"
-                            class="flex-grow-1"></v-text-field>
-                          <v-btn icon="mdi-delete" variant="text" size="small" color="error" class="ms-2"
-                            @click="removeSubsection(index, subIndex)"></v-btn>
+                          <v-card class="element-card flex-grow-1 me-2">
+                            <v-card-item class="d-flex align-center pa-2">
+                              <div class="d-flex align-center flex-grow-1">
+                                <v-select 
+                                  v-model="subsection.level" 
+                                  :items="headingTypes" 
+                                  hide-details 
+                                  density="compact"
+                                  class="heading-type-select me-4" 
+                                  variant="plain"
+                                  style="min-width: 120px; max-width: 120px;"
+                                ></v-select>
+                                <v-text-field 
+                                  v-model="subsection.title" 
+                                  hide-details 
+                                  density="compact" 
+                                  variant="underlined"
+                                  class="flex-grow-1"
+                                  placeholder="Enter title"
+                                ></v-text-field>
+                              </div>
+                            </v-card-item>
+                          </v-card>
+                          <v-btn 
+                            icon="mdi-close" 
+                            variant="text" 
+                            size="small" 
+                            color="error" 
+                            class="ms-2"
+                            @click="removeSubsection(index, subIndex)"
+                          ></v-btn>
                         </div>
                       </div>
                     </template>
@@ -553,14 +589,17 @@ export default {
 }
 
 .heading-type-select {
-  max-width: 120px;
+  flex: 0 0 120px;
+  margin-right: 16px;
 }
 
-.subsection-item {
-  margin-left: 24px;
-  margin-top: 16px;
-  padding-left: 16px;
-  border-left: 2px solid rgba(0, 0, 0, 0.12);
+.title-field {
+  flex: 1;
+  min-width: 0;
+}
+
+:deep(.title-field .v-field__input) {
+  width: 100%;
 }
 
 .outline-sections {
@@ -568,17 +607,71 @@ export default {
   margin: 0 auto;
 }
 
+.section-card {
+  transition: transform 0.2s ease;
+}
+
+.section-card:hover {
+  transform: translateY(-2px);
+}
+
+.ghost {
+  opacity: 0.5;
+  background: #c8ebfb;
+}
+
+.chosen {
+  opacity: 0.5;
+  background: #c8ebfb;
+}
+
+.chat-history-item {
+  margin-bottom: 4px;
+}
+
+.chat-history-item :deep(.v-list-item-title) {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.v-navigation-drawer :deep(.v-list-item--active) {
+  background-color: rgb(var(--v-theme-primary-lighten-1));
+}
+
+.text-red {
+  color: rgb(var(--v-theme-error));
+}
+
+.element-card {
+  background-color: white;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease;
+}
+
+.element-card:hover {
+  border-color: rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.section-card {
+  background-color: rgb(250, 250, 250);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  transition: all 0.3s ease;
+}
+
+.section-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
 :deep(.v-card-item) {
-  padding: 20px;
+  padding: 8px 12px;
 }
 
-:deep(.v-select .v-field) {
-  border-radius: 4px;
-  background-color: rgba(0, 0, 0, 0.04);
-}
-
-:deep(.v-text-field .v-field) {
-  border-radius: 0;
+:deep(.element-card .v-field__input) {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  width: 100%;
 }
 
 .drag-handle,
@@ -624,5 +717,36 @@ export default {
 
 .text-red {
   color: rgb(var(--v-theme-error));
+}
+
+.element-card {
+  background-color: white;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease;
+}
+
+.element-card:hover {
+  border-color: rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.section-card {
+  background-color: rgb(250, 250, 250);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  transition: all 0.3s ease;
+}
+
+.section-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+:deep(.v-card-item) {
+  padding: 8px 12px;
+}
+
+:deep(.element-card .v-field__input) {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  width: 100%;
 }
 </style>
