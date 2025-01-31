@@ -1,7 +1,23 @@
 <template>
   <div class="d-flex blog-container">
+    <!-- Mobile Menu Button -->
+    <v-app-bar
+      v-if="isMobile"
+      density="compact"
+      elevation="0" class="mobile-app-bar bg-grey-lighten-4"
+    >
+      <v-app-bar-nav-icon  color="primary" @click="drawer = !drawer"></v-app-bar-nav-icon>
+      <v-app-bar-title class="text-body-2 text-primary">Blog Articles</v-app-bar-title>
+    </v-app-bar>
+
     <!-- Chat History Drawer -->
-    <v-navigation-drawer permanent width="300" class="chat-drawer">
+    <v-navigation-drawer
+      v-model="drawer"
+      :permanent="!isMobile"
+      :temporary="isMobile"
+      width="300"
+      class="chat-drawer"
+    >
       <v-list>
         <!-- New Chat Button -->
         <v-list-item
@@ -49,89 +65,109 @@
           @submit.prevent="handleGenerateOutline"
           v-model="formValid"
         >
-          <v-text-field 
-            v-model="blogTitle" 
-            label="Blog Title" 
-            placeholder="How to make money Farming?"
-            class="mb-4"
-            :rules="requiredRule"
-            required
-          >
-            <template v-slot:label>
+          <div class="mb-4">
+            <label class="text-subtitle-1 mb-1 d-block">
               Blog Title <span class="text-red">*</span>
-            </template>
-          </v-text-field>
+            </label>
+            <v-text-field 
+              v-model="blogTitle" 
+              placeholder="How to make money Farming?"
+              :rules="requiredRule"
+              density="comfortable"
+              variant="outlined"
+              hide-details="auto"
+              required
+            ></v-text-field>
+          </div>
 
-          <v-select 
-            v-model="selectedTranscripts" 
-            :items="availableTranscripts" 
-            label="Attach Transcriptions" 
-            multiple
-            chips 
-            class="mb-4"
-            :rules="requiredRule"
-            required
-          >
-            <template v-slot:label>
+          <div class="mb-4">
+            <label class="text-subtitle-1 mb-1 d-block">
               Attach Transcriptions <span class="text-red">*</span>
-            </template>
-            <template v-slot:selection="{ item }">
-              <v-chip>{{ item.title }}</v-chip>
-            </template>
-          </v-select>
+            </label>
+            <v-select 
+              v-model="selectedTranscripts" 
+              :items="availableTranscripts" 
+              multiple
+              chips 
+              :rules="requiredArrayRule"
+              density="comfortable"
+              variant="outlined"
+              hide-details="auto"
+              placeholder="Select transcriptions to include"
+              no-data-text="No transcriptions available"
+              required
+            >
+              <template v-slot:selection="{ item }">
+                <v-chip>{{ item.title }}</v-chip>
+              </template>
+            </v-select>
+          </div>
 
-          <v-select 
-            v-model="articleLength" 
-            :items="['Short', 'Medium', 'Long']" 
-            label="Article Length"
-            class="mb-4"
-            :rules="requiredRule"
-            required
-          >
-            <template v-slot:label>
+          <div class="mb-4">
+            <label class="text-subtitle-1 mb-1 d-block">
               Article Length <span class="text-red">*</span>
-            </template>
-          </v-select>
+            </label>
+            <v-select 
+              v-model="articleLength" 
+              :items="lengthOptions"
+              :rules="requiredRule"
+              density="comfortable"
+              variant="outlined"
+              hide-details="auto"
+              required
+            ></v-select>
+          </div>
 
-          <v-select 
-            v-model="toneOfVoice" 
-            :items="['Professional', 'Casual', 'Academic']" 
-            label="Tone of Voice"
-            class="mb-4"
-            :rules="requiredRule"
-            required
-          >
-            <template v-slot:label>
+          <div class="mb-4">
+            <label class="text-subtitle-1 mb-1 d-block">
               Tone of Voice <span class="text-red">*</span>
-            </template>
-          </v-select>
+            </label>
+            <v-select 
+              v-model="toneOfVoice" 
+              :items="toneOptions"
+              :rules="requiredRule"
+              density="comfortable"
+              variant="outlined"
+              hide-details="auto"
+              required
+            ></v-select>
+          </div>
 
-          <v-select 
-            v-model="pointOfView" 
-            :items="['First Person', 'Second Person', 'Third Person']"
-            label="Point of View" 
-            class="mb-4"
-            :rules="requiredRule"
-            required
-          >
-            <template v-slot:label>
+          <div class="mb-4">
+            <label class="text-subtitle-1 mb-1 d-block">
               Point of View <span class="text-red">*</span>
-            </template>
-          </v-select>
+            </label>
+            <v-select 
+              v-model="pointOfView" 
+              :items="povOptions"
+              :rules="requiredRule"
+              density="comfortable"
+              variant="outlined"
+              hide-details="auto"
+              required
+            ></v-select>
+          </div>
 
-          <v-textarea 
-            v-model="additionalInstructions" 
-            label="Additional Instructions to AI" 
-            rows="3"
-            class="mb-4"
-          ></v-textarea>
+          <div class="mb-4">
+            <label class="text-subtitle-1 mb-1 d-block">
+              Additional Instructions to AI
+            </label>
+            <v-textarea 
+              v-model="additionalInstructions" 
+              rows="3"
+              density="comfortable"
+              variant="outlined"
+              hide-details="auto"
+              placeholder="Add any specific instructions for the AI (e.g., 'Include more statistics', 'Focus on beginner-friendly content')"
+            ></v-textarea>
+          </div>
 
           <v-btn 
             color="primary" 
             block 
             :loading="loading" 
             type="submit"
-            :disabled="!formValid"
+            :disabled="!isFormValid"
           >
             Generate Outline
           </v-btn>
@@ -315,9 +351,9 @@ export default {
     return {
       blogTitle: '',
       selectedTranscripts: [],
-      articleLength: '',
-      toneOfVoice: '',
-      pointOfView: '',
+      articleLength: 'Medium',
+      toneOfVoice: 'Professional',
+      pointOfView: 'Second Person',
       additionalInstructions: '',
       chatHistory: [],
       headingTypes: [
@@ -335,10 +371,17 @@ export default {
       ],
       currentChatId: null,
       defaultChatTitle: 'New Chat',
-      formValid: false,
       requiredRule: [
-        v => !!v || 'This field is required'
+        v => !!v || 'This field is required',
       ],
+      requiredArrayRule: [
+        v => (Array.isArray(v) && v.length > 0) || 'At least one selection is required'
+      ],
+      lengthOptions: ['Short', 'Medium', 'Long'],
+      toneOptions: ['Professional', 'Casual', 'Academic'],
+      povOptions: ['First Person', 'Second Person', 'Third Person'],
+      formValid: false,
+      drawer: true,
     }
   },
 
@@ -351,6 +394,29 @@ export default {
         { title: 'Transcript 1', value: 1 },
         { title: 'Transcript 2', value: 2 }
       ]
+    },
+
+    isFormValid() {
+      return !!(
+        this.blogTitle && 
+        this.selectedTranscripts.length > 0 && 
+        this.articleLength && 
+        this.toneOfVoice && 
+        this.pointOfView
+      )
+    },
+
+    isMobile() {
+      return this.$vuetify.display.mobile
+    }
+  },
+
+  watch: {
+    isMobile: {
+      immediate: true,
+      handler(mobile) {
+        this.drawer = !mobile
+      }
     }
   },
 
@@ -367,9 +433,9 @@ export default {
         settings: {
           blogTitle: '',
           selectedTranscripts: [],
-          articleLength: '',
-          toneOfVoice: '',
-          pointOfView: '',
+          articleLength: 'Medium',
+          toneOfVoice: 'Professional',
+          pointOfView: 'Second Person',
           additionalInstructions: ''
         }
       }
@@ -391,9 +457,9 @@ export default {
       // Reset form fields
       this.blogTitle = chat.settings.blogTitle || ''
       this.selectedTranscripts = chat.settings.selectedTranscripts || []
-      this.articleLength = chat.settings.articleLength || ''
-      this.toneOfVoice = chat.settings.toneOfVoice || ''
-      this.pointOfView = chat.settings.pointOfView || ''
+      this.articleLength = chat.settings.articleLength || 'Medium'
+      this.toneOfVoice = chat.settings.toneOfVoice || 'Professional'
+      this.pointOfView = chat.settings.pointOfView || 'Second Person'
       this.additionalInstructions = chat.settings.additionalInstructions || ''
       
       // Load outline and article if they exist
@@ -534,7 +600,7 @@ export default {
 
 <style scoped>
 .blog-container {
-  height: 100%;
+  height: calc(100vh - var(--v-layout-top));
 }
 
 .chat-drawer {
@@ -544,6 +610,7 @@ export default {
 .main-content {
   padding: 16px;
   overflow-y: auto;
+  height: 100%;
 }
 
 .article-content {
@@ -765,5 +832,11 @@ export default {
 <style>
 .custom-width .v-card-item__content{
   width: 100% !important;
+}
+
+@media (max-width: 600px) {
+  .blog-container {
+    height: calc(100vh - var(--v-layout-top) - 48px); /* Adjust for app bar */
+  }
 }
 </style>
