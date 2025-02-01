@@ -121,6 +121,16 @@
             </v-list-item>
 
             <v-list-item
+              value="subscriptions"
+              @click="navigateToSubscriptions"
+            >
+              <template v-slot:prepend>
+                <v-icon icon="mdi-credit-card"></v-icon>
+              </template>
+              <v-list-item-title>Subscription Plans</v-list-item-title>
+            </v-list-item>
+
+            <v-list-item
               value="logout"
               @click="handleLogout"
               color="error"
@@ -216,12 +226,6 @@ export default {
               path: '/dashboard/blog-articles'
             }
           ]
-        },
-        {
-          title: 'Subscription Plans',
-          icon: 'mdi-credit-card',
-          path: '/dashboard/subscriptions',
-          type: 'item'
         }
       ]
     }
@@ -325,10 +329,19 @@ export default {
     /**
      * Navigates to user profile page
      * @returns {void}
-     */
+     */ 
     navigateToProfile() {
       this.userMenu = false
       this.$router.push('/dashboard/profile')
+    },
+
+    /**
+     * Navigates to subscriptions page
+     * @returns {void}
+     */
+    navigateToSubscriptions() {
+      this.userMenu = false
+      this.$router.push('/dashboard/subscriptions')
     },
 
     /**
