@@ -1,25 +1,14 @@
 <template>
   <v-container>
     <!-- Error/Success Alert -->
-    <v-alert
-      v-if="error || isFileUploaded"
-      :type="error ? 'error' : 'success'"
-      :color="error ? 'error-lighten' : 'success-lighten'"
-      class="mb-4 alert-icon-centered"
-      closable
-      @click="
-        () => {
-          error = null;
-          isFileUploaded = false;
-        }
-      "
-    >
+    <v-alert v-if="error || isFileUploaded" :type="error ? 'error' : 'success'"
+      :color="error ? 'error-lighten' : 'success-lighten'" class="mb-4 alert-icon-centered" closable @click="() => {
+        error = null;
+        isFileUploaded = false;
+      }
+        ">
       <template v-slot:prepend>
-        <v-icon
-          :icon="error ? 'mdi-alert-circle' : 'mdi-check-circle'"
-          :color="error ? 'error' : 'success'"
-          start
-        />
+        <v-icon :icon="error ? 'mdi-alert-circle' : 'mdi-check-circle'" :color="error ? 'error' : 'success'" start />
       </template>
       {{ error || "Files uploaded successfully!" }}
     </v-alert>
@@ -29,17 +18,9 @@
         <v-card class="upload-container">
           <!-- Sticky Header -->
           <v-card-title class="d-flex align-center py-4 px-6">
-            <v-icon
-              icon="mdi-upload"
-              :size="$vuetify.display.smAndDown ? '24' : '32'"
-              class="me-3"
-              color="primary"
-            />
-            <span
-              :class="
-                $vuetify.display.smAndDown ? 'text-subtitle-2' : 'text-h6'
-              "
-            >
+            <v-icon icon="mdi-upload" :size="$vuetify.display.smAndDown ? '24' : '32'" class="me-3" color="primary" />
+            <span :class="$vuetify.display.smAndDown ? 'text-subtitle-2' : 'text-h6'
+              ">
               Add one or more audio Files with optional title to transcribe
             </span>
           </v-card-title>
@@ -47,22 +28,9 @@
           <v-divider></v-divider>
 
           <!-- Add More Button -->
-          <div
-            v-if="audioFiles?.length"
-            class="sticky-header d-flex align-center justify-end pa-3"
-          >
-            <v-btn
-              prepend-icon="mdi-plus"
-              class="add-more-button text-capitalize"
-              :class="
-                $vuetify.display.smAndDown ? 'text-caption' : 'text-button'
-              "
-              size="small"
-              variant="outlined"
-              color="primary"
-              @click="addNewCard"
-              :disabled="audioFiles.length >= 5"
-            >
+          <div v-if="audioFiles?.length" class="sticky-header d-flex align-center justify-end pa-3">
+            <v-btn prepend-icon="mdi-plus" class="add-more-button text-capitalize" :class="$vuetify.display.smAndDown ? 'text-caption' : 'text-button'
+              " size="small" variant="outlined" color="primary" @click="addNewCard" :disabled="audioFiles.length >= 5">
               Add More Files ({{ audioFiles.length }}/5)
             </v-btn>
           </div>
@@ -70,29 +38,16 @@
           <!-- Cards Container -->
           <div class="cards-container">
             <!-- Hidden file input -->
-            <input
-              ref="fileInput"
-              type="file"
-              multiple
-              accept="audio/*"
-              class="d-none"
-              @change="handleFileChange"
-            />
+            <input ref="fileInput" type="file" multiple accept="audio/*" class="d-none" @change="handleFileChange" />
 
             <template v-if="audioFiles.length === 0">
               <div class="empty-state pa-8 text-center">
-                <v-icon size="64" color="primary" class="mb-4"
-                  >mdi-upload</v-icon
-                >
+                <v-icon size="64" color="primary" class="mb-4">mdi-upload</v-icon>
                 <div class="text-h6 mb-2">No Audio Files Added</div>
                 <div class="text-body-2 text-medium-emphasis mb-4">
                   Add audio files to upload and transcribe
                 </div>
-                <v-btn
-                  color="primary"
-                  prepend-icon="mdi-plus"
-                  @click="triggerFileInput"
-                >
+                <v-btn color="primary" prepend-icon="mdi-plus" @click="triggerFileInput">
                   Add Audio File
                 </v-btn>
               </div>
@@ -101,46 +56,22 @@
             <template v-else>
               <div class="cards-wrapper">
                 <v-slide-y-transition group>
-                  <div
-                    v-for="(file, index) in audioFiles"
-                    :key="index"
-                    class="pa-4"
-                  >
+                  <div v-for="(file, index) in audioFiles" :key="index" class="pa-4">
                     <v-card class="bg-grey-lighten-4 audio-card" elevation="1">
                       <v-card-title class="d-flex align-center py-4 px-6">
-                        <v-icon
-                          icon="mdi-file-music"
-                          :size="24"
-                          class="me-3"
-                          color="primary"
-                        />
-                        <span class="text-subtitle-1"
-                          >Source
-                          {{ audioFiles.length > 1 ? index + 1 : "" }}</span
-                        >
+                        <v-icon icon="mdi-file-music" :size="24" class="me-3" color="primary" />
+                        <span class="text-subtitle-1">Source
+                          {{ audioFiles.length > 1 ? index + 1 : "" }}</span>
                         <v-spacer />
-                        <v-btn
-                          icon="mdi-delete"
-                          variant="text"
-                          density="comfortable"
-                          @click="removeFile(index)"
-                          color="error"
-                          :disabled="uploading"
-                        />
+                        <v-btn icon="mdi-delete" variant="text" density="comfortable" @click="removeFile(index)"
+                          color="error" :disabled="uploading" />
                       </v-card-title>
 
                       <v-card-text class="pa-4">
                         <div class="input-fields-wrapper">
                           <div class="d-flex align-center mb-3">
-                            <v-text-field
-                              v-model="file.title"
-                              label="Title (optional)"
-                              variant="outlined"
-                              density="comfortable"
-                              :disabled="uploading"
-                              hide-details="auto"
-                              class="flex-grow-1"
-                            >
+                            <v-text-field v-model="file.title" label="Title (optional)" variant="outlined"
+                              density="comfortable" :disabled="uploading" hide-details="auto" class="flex-grow-1">
                               <template #prepend-inner>
                                 <v-icon>mdi-format-title</v-icon>
                               </template>
@@ -148,34 +79,27 @@
                           </div>
 
                           <div class="d-flex align-center">
-                            <v-file-input
-                              v-model="file.file"
-                              :label="file.name || 'Choose File'"
-                              variant="outlined"
-                              density="comfortable"
-                              accept="audio/*"
-                              :error-messages="file.fileError"
-                              :disabled="uploading"
-                              @change="(e) => handleFileChange(e, index)"
-                              hide-details="auto"
-                              class="flex-grow-1"
-                              prepend-icon=""
-                            >
+                            <v-file-input v-model="file.file" :label="file.name || 'Choose File'" variant="outlined"
+                              density="comfortable" accept="audio/*" :error-messages="file.fileError"
+                              :disabled="uploading" @change="(e) => handleFileChange(e, index)" hide-details="auto"
+                              class="flex-grow-1" prepend-icon="">
                               <template #prepend-inner>
                                 <v-icon>mdi-paperclip</v-icon>
                               </template>
                             </v-file-input>
                           </div>
 
-                          <div
-                            v-if="file.file"
-                            class="file-info d-flex align-center mt-2 ms-6"
-                          >
+                          <div v-if="file.file" class="file-info d-flex align-center mt-2 ms-6">
                             <div class="text-truncate">{{ file.name }}</div>
                             <div class="text-caption text-medium-emphasis ms-2">
                               ({{ (file.size / (1024 * 1024)).toFixed(2) }} MB)
                             </div>
                           </div>
+
+                          <!-- Show linear loader if chunks are being processed -->
+                          <v-progress-linear v-if="isChunkProcessingComplete[file.id]" indeterminate color="primary"
+                            class="mt-2">
+                          </v-progress-linear>
                         </div>
                       </v-card-text>
                     </v-card>
@@ -186,16 +110,9 @@
 
             <!-- Fixed Upload Button -->
             <div v-if="audioFiles.length" class="upload-button-wrapper">
-              <v-btn
-                color="primary"
-                :loading="uploading"
-                :disabled="!isValidForm"
-                @click="uploadFiles"
-                :size="$vuetify.display.smAndDown ? 'small' : 'large'"
-                prepend-icon="mdi-upload"
-                class="text-capitalize"
-                block
-              >
+              <v-btn color="primary" :loading="uploading" :disabled="!isValidForm" @click="uploadFiles"
+                :size="$vuetify.display.smAndDown ? 'small' : 'large'" prepend-icon="mdi-upload" class="text-capitalize"
+                block>
                 Upload {{ audioFiles.length > 1 ? "All" : "" }}
                 {{ audioFiles.length > 1 ? "Audios" : "Audio" }}
               </v-btn>
@@ -225,6 +142,8 @@ export default {
       socket: null,
       transcription: "",
       uploadProgress: 0,
+      isChunkProcessingComplete: {},
+      apiUrl: import.meta.env.VITE_APP_API_KEY,
     };
   },
 
@@ -245,16 +164,22 @@ export default {
   },
 
   computed: {
+    /**
+     * Checks if the form is valid for submission
+     * @returns {boolean} True if form is valid, false otherwise
+     */
     isValidForm() {
       return (
-        this.audioFiles.length > 0 && this.audioFiles.every((file) => file.file)
+        this.audioFiles.length > 0 &&
+        this.audioFiles.every((file) => file.file) &&
+        !Object.values(this.isChunkProcessingComplete).some(status => status === true)
       );
     },
   },
 
   methods: {
     /**
-     * Initializes WebSocket connection
+     * Initializes WebSocket connection and sets up event listeners
      */
     initializeWebSocket() {
       // Connect to the WebSocket server
@@ -276,7 +201,7 @@ export default {
       });
     },
 
-     /**
+    /**
      * Checks if the current viewport is mobile width
      * Updates isMobile state based on window width
      */
@@ -284,6 +209,10 @@ export default {
       this.isMobile = window.innerWidth < 600;
     },
 
+    /**
+     * Adds a new audio file card to the list
+     * Limited to maximum of 5 files
+     */
     addNewCard() {
       if (this.audioFiles.length < 5) {
         this.audioFiles.push({
@@ -297,164 +226,54 @@ export default {
       }
     },
 
+    /**
+     * Removes an audio file from the list at specified index
+     * @param {number} index - Index of file to remove
+     */
     removeFile(index) {
       this.audioFiles.splice(index, 1);
     },
 
+    /**
+     * Handles file selection/change events
+     * @param {Event|File} event - File change event or File object
+     * @param {number} index - Index of file in audioFiles array
+     */
     handleFileChange(event, index) {
-  if (!event) {
-    this.audioFiles[index].file = null;
-    this.audioFiles[index].name = "";
-    this.audioFiles[index].size = 0;
-    this.audioFiles[index].fileError = null;
-    return;
-  }
+      if (!event) {
+        this.audioFiles[index].file = null;
+        this.audioFiles[index].name = "";
+        this.audioFiles[index].size = 0;
+        this.audioFiles[index].fileError = null;
+        return;
+      }
 
-  const file = event instanceof File ? event : event.target.files?.[0];
-  if (!file) return;
+      const file = event instanceof File ? event : event.target.files?.[0];
+      if (!file) return;
 
-  this.audioFiles[index].file = file;
-  this.audioFiles[index].name = file.name;
-  this.audioFiles[index].size = file.size;
-  this.audioFiles[index].fileError = null;
+      this.audioFiles[index].file = file;
+      this.audioFiles[index].name = file.name;
+      this.audioFiles[index].size = file.size;
+      this.audioFiles[index].fileError = null;
 
-  // Process audio file into 30-second chunks
-  this.splitAudioIntoChunks(file, index);
-  console.log("Done ")
-},
+      this.splitAudioIntoChunks(file, index);
+      console.log("Done ")
+    },
 
+    /**
+     * Triggers file input by adding a new card
+     */
     triggerFileInput() {
       this.addNewCard();
     },
 
-    // async uploadFiles() {
-    //   if (!this.isValidForm) return;
-
-    //   this.uploading = true;
-    //   this.error = null;
-    //   const audioStore = useAudioStore();
-
-    //   try {
-    //     for (const file of this.audioFiles) {
-    //       debugger
-    //       console.log("Files being uploaded", this.audioFiles);
-    //       console.log("single file being uploaded", file);
-    //       await audioStore.uploadSingleFile(file.file, file.title);
-    //     }
-    //     this.isFileUploaded = true;
-    //     this.audioFiles = [];
-    //   } catch (error) {
-    //     console.error("Upload failed:", error);
-    //     this.error = error.message || "Failed to upload audio file";
-    //   } finally {
-    //     this.uploading = false;
-    //     this.uploadProgress = 0;
-    //   }
-    // },
-
-
-//     async splitAudioIntoChunks(file, index) {
-//   const audioContext = new AudioContext();
-//   const arrayBuffer = await file.arrayBuffer();
-//   const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-
-//   const chunkDuration = 30; // 30 seconds
-//   const sampleRate = audioBuffer.sampleRate;
-//   const frameCount = chunkDuration * sampleRate;
-
-//   this.audioFiles[index].chunks = [];
-
-//   for (let i = 0; i < audioBuffer.duration; i += chunkDuration) {
-//     const startSample = i * sampleRate;
-//     const endSample = Math.min(startSample + frameCount, audioBuffer.length);
-
-//     const chunkBuffer = audioContext.createBuffer(
-//       audioBuffer.numberOfChannels,
-//       endSample - startSample,
-//       sampleRate
-//     );
-
-//     for (let channel = 0; channel < audioBuffer.numberOfChannels; channel++) {
-//       chunkBuffer
-//         .getChannelData(channel)
-//         .set(audioBuffer.getChannelData(channel).slice(startSample, endSample));
-//     }
-
-//     // Convert directly to Blob instead of encoding
-//     const chunkBlob = new Blob([this.convertBufferToWav(chunkBuffer)], {
-//       type: "audio/wav",
-//     });
-
-  
-//     this.audioFiles[index].chunks.push(chunkBlob);
-//   }
-// },
-
-// convertBufferToWav(audioBuffer) {
-//   const numOfChan = audioBuffer.numberOfChannels,
-//     length = audioBuffer.length * numOfChan * 2 + 44,
-//     buffer = new ArrayBuffer(length),
-//     view = new DataView(buffer),
-//     channels = [],
-//     sampleRate = audioBuffer.sampleRate,
-//     bitDepth = 16;
-
-//   let offset = 0;
-
-//   // Write WAV header
-//   const writeString = (str) => {
-//     for (let i = 0; i < str.length; i++) {
-//       view.setUint8(offset + i, str.charCodeAt(i));
-//     }
-//     offset += str.length;
-//   };
-
-//   writeString("RIFF");
-//   view.setUint32(offset, 36 + audioBuffer.length * numOfChan * 2, true);
-//   offset += 4;
-//   writeString("WAVE");
-//   writeString("fmt ");
-//   view.setUint32(offset, 16, true);
-//   offset += 4;
-//   view.setUint16(offset, 1, true);
-//   offset += 2;
-//   view.setUint16(offset, numOfChan, true);
-//   offset += 2;
-//   view.setUint32(offset, sampleRate, true);
-//   offset += 4;
-//   view.setUint32(offset, sampleRate * numOfChan * (bitDepth / 8), true);
-//   offset += 4;
-//   view.setUint16(offset, numOfChan * (bitDepth / 8), true);
-//   offset += 2;
-//   view.setUint16(offset, bitDepth, true);
-//   offset += 2;
-//   writeString("data");
-//   view.setUint32(offset, audioBuffer.length * numOfChan * (bitDepth / 8), true);
-//   offset += 4;
-
-//   // Write interleaved audio data
-//   for (let i = 0; i < numOfChan; i++) {
-//     channels.push(audioBuffer.getChannelData(i));
-//   }
-
-//   const interleaved = new Int16Array(audioBuffer.length * numOfChan);
-//   let index = 0;
-
-//   for (let i = 0; i < audioBuffer.length; i++) {
-//     for (let j = 0; j < numOfChan; j++) {
-//       interleaved[index++] = Math.max(-1, Math.min(1, channels[j][i])) * 0x7fff;
-//     }
-//   }
-
-//   for (let i = 0; i < interleaved.length; i++, offset += 2) {
-//     view.setInt16(offset, interleaved[i], true);
-//   }
-
-//   return buffer;
-// }
-
-
-async splitAudioIntoChunks(file, index) {
+    /**
+     * Splits audio file into smaller chunks for processing
+     * @param {File} file - Audio file to split
+     * @param {number} index - Index of file in audioFiles array
+     */
+    async splitAudioIntoChunks(file, index) {
+      this.isChunkProcessingComplete[this.audioFiles[index].id] = true;
       const audioContext = new AudioContext();
       const arrayBuffer = await file.arrayBuffer();
       const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
@@ -501,8 +320,14 @@ async splitAudioIntoChunks(file, index) {
 
       console.log(`Created ${this.audioFiles[index].chunks.length} chunks for processing`);
       this.processingStatus = `Created ${this.audioFiles[index].chunks.length} chunks for processing`;
+      this.isChunkProcessingComplete[this.audioFiles[index].id] = false;
     },
 
+    /**
+     * Calculates optimal chunk size based on audio duration
+     * @param {number} totalDuration - Total duration of audio in seconds
+     * @returns {number} Optimal chunk size in seconds
+     */
     calculateOptimalChunkSize(totalDuration) {
       // For files under 1 minute, use 15-second chunks
       if (totalDuration <= 60) {
@@ -516,6 +341,12 @@ async splitAudioIntoChunks(file, index) {
       return 30;
     },
 
+    /**
+     * Converts AudioBuffer to WAV format
+     * @param {AudioBuffer} audioBuffer - Audio buffer to convert
+     * @param {number} bitDepth - Bit depth for WAV conversion (default: 32)
+     * @returns {ArrayBuffer} WAV format audio data
+     */
     convertBufferToWav(audioBuffer, bitDepth = 32) {
       const numOfChan = audioBuffer.numberOfChannels;
       const length = audioBuffer.length * numOfChan * (bitDepth / 8) + 44;
@@ -523,7 +354,7 @@ async splitAudioIntoChunks(file, index) {
       const view = new DataView(buffer);
       const channels = [];
       const sampleRate = audioBuffer.sampleRate;
-      
+
       let offset = 0;
 
       // Improved WAV header writing with error checking
@@ -586,25 +417,27 @@ async splitAudioIntoChunks(file, index) {
       return buffer;
     },
 
+    /**
+     * Uploads and processes all audio files
+     * Handles transcription of audio chunks in batches
+     */
     async uploadFiles() {
-      debugger
+      // debugger
       if (!this.isValidForm) return;
 
       this.uploading = true;
       this.transcription = "";
       this.error = null;
-
-      const apiKey = 'addApiKeyHere'; // Replace with actual API key
-  ; // Move API key to environment variable
-
+      // get the api key from the environment variable
+      const apiKey = this.apiUrl;
       for (const file of this.audioFiles) {
         this.processingStatus = `Processing file: ${file.name}`;
-        
+
         // Process chunks in batches to avoid overwhelming the API
         const batchSize = 3;
         for (let i = 0; i < file.chunks.length; i += batchSize) {
           const batch = file.chunks.slice(i, i + batchSize);
-          const chunkPromises = batch.map((chunk, batchIndex) => 
+          const chunkPromises = batch.map((chunk, batchIndex) =>
             this.transcribeChunk(chunk.blob, file.name, apiKey, i + batchIndex)
           );
 
@@ -636,9 +469,17 @@ async splitAudioIntoChunks(file, index) {
       this.uploading = false;
       this.isFileUploaded = true;
       this.processingStatus = "Transcription complete";
-      console.log("Final Transcription Length:", this.transcription.length);
+      console.log("Final Transcription Length:", this.transcription);
     },
 
+    /**
+     * Transcribes a single audio chunk using OpenAI's Whisper API
+     * @param {Blob} chunk - Audio chunk to transcribe
+     * @param {string} fileName - Original file name
+     * @param {string} apiKey - OpenAI API key
+     * @param {number} index - Chunk index
+     * @returns {Promise<{text: string, index: number}>} Transcription result
+     */
     async transcribeChunk(chunk, fileName, apiKey, index) {
       const formData = new FormData();
       formData.append("file", chunk, `${fileName}-chunk-${index}.wav`);
@@ -663,8 +504,22 @@ async splitAudioIntoChunks(file, index) {
         console.error(`Error transcribing chunk ${index}:`, error);
         throw error; // Propagate error to be handled by caller
       }
-    }
+    },
 
+    /**
+     * Creates a debounced version of a function
+     * @param {Function} func - Function to debounce
+     * @param {number} delay - Delay in milliseconds
+     * @returns {Function} Debounced function
+     */
+    debounce(func, delay) {
+      let timeout;
+      return function (...args) {
+        const context = this;
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(context, args), delay);
+      };
+    },
   },
 };
 </script>

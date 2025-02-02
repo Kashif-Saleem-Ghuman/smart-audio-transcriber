@@ -59,119 +59,128 @@
     <!-- Main Content Area -->
     <div class="flex-grow-1 main-content">
       <v-card v-if="!outline" class="pa-6">
-        <h2 class="text-h5 mb-6">Generate Blog Article</h2>
+        <BlogTypePrompt 
+          v-if="!selectedBlogType"
+          @option-selected="selectedBlogType = $event"
+        />
+        
+        <template v-else>
+          <h2 class="text-h5 mb-6">Generate Blog Article</h2>
 
-        <v-form 
-          @submit.prevent="handleGenerateOutline"
-          v-model="formValid"
-        >
-          <div class="mb-4">
-            <label class="text-subtitle-1 mb-1 d-block">
-              Blog Title <span class="text-red">*</span>
-            </label>
-            <v-text-field 
-              v-model="blogTitle" 
-              placeholder="How to make money Farming?"
-              :rules="requiredRule"
-              density="comfortable"
-              variant="outlined"
-              hide-details="auto"
-              required
-            ></v-text-field>
-          </div>
-
-          <div class="mb-4">
-            <label class="text-subtitle-1 mb-1 d-block">
-              Attach Transcriptions <span class="text-red">*</span>
-            </label>
-            <v-select 
-              v-model="selectedTranscripts" 
-              :items="availableTranscripts" 
-              multiple
-              chips 
-              :rules="requiredArrayRule"
-              density="comfortable"
-              variant="outlined"
-              hide-details="auto"
-              placeholder="Select transcriptions to include"
-              no-data-text="No transcriptions available"
-              required
-            >
-              <template v-slot:selection="{ item }">
-                <v-chip>{{ item.title }}</v-chip>
-              </template>
-            </v-select>
-          </div>
-
-          <div class="mb-4">
-            <label class="text-subtitle-1 mb-1 d-block">
-              Article Length <span class="text-red">*</span>
-            </label>
-            <v-select 
-              v-model="articleLength" 
-              :items="lengthOptions"
-              :rules="requiredRule"
-              density="comfortable"
-              variant="outlined"
-              hide-details="auto"
-              required
-            ></v-select>
-          </div>
-
-          <div class="mb-4">
-            <label class="text-subtitle-1 mb-1 d-block">
-              Tone of Voice <span class="text-red">*</span>
-            </label>
-            <v-select 
-              v-model="toneOfVoice" 
-              :items="toneOptions"
-              :rules="requiredRule"
-              density="comfortable"
-              variant="outlined"
-              hide-details="auto"
-              required
-            ></v-select>
-          </div>
-
-          <div class="mb-4">
-            <label class="text-subtitle-1 mb-1 d-block">
-              Point of View <span class="text-red">*</span>
-            </label>
-            <v-select 
-              v-model="pointOfView" 
-              :items="povOptions"
-              :rules="requiredRule"
-              density="comfortable"
-              variant="outlined"
-              hide-details="auto"
-              required
-            ></v-select>
-          </div>
-
-          <div class="mb-4">
-            <label class="text-subtitle-1 mb-1 d-block">
-              Additional Instructions to AI
-            </label>
-            <v-textarea 
-              v-model="additionalInstructions" 
-              rows="3"
-              density="comfortable"
-              variant="outlined"
-              hide-details="auto"
-              placeholder="Add any specific instructions for the AI (e.g., 'Include more statistics', 'Focus on beginner-friendly content')"
-            ></v-textarea>
-          </div>
-
-          <v-btn 
-            color="primary" 
-            block 
-            :loading="loading" 
-            type="submit"
-            :disabled="!isFormValid"
+          <v-form 
+            @submit.prevent="handleGenerateOutline"
+            v-model="formValid"
           >
-            Generate Outline
-          </v-btn>
-        </v-form>
+            <div v-if="visibleFields.includes('blogTitle')" class="mb-4">
+              <label class="text-subtitle-1 mb-1 d-block">
+                Blog Title <span class="text-red">*</span>
+              </label>
+              <v-text-field 
+                v-model="blogTitle" 
+                placeholder="How to make money Farming?"
+                :rules="requiredRule"
+                density="comfortable"
+                variant="outlined"
+                hide-details="auto"
+                required
+              ></v-text-field>
+            </div>
+
+            <div v-if="visibleFields.includes('transcripts')" class="mb-4">
+              <label class="text-subtitle-1 mb-1 d-block">
+                Attach Transcriptions <span class="text-red">*</span>
+              </label>
+              <v-select 
+                v-model="selectedTranscripts" 
+                :items="availableTranscripts" 
+                multiple
+                chips 
+                :rules="requiredArrayRule"
+                density="comfortable"
+                variant="outlined"
+                hide-details="auto"
+                placeholder="Select transcriptions to include"
+                no-data-text="No transcriptions available"
+                required
+              >
+                <template v-slot:selection="{ item }">
+                  <v-chip>{{ item.title }}</v-chip>
+                </template>
+              </v-select>
+            </div>
+
+            <div v-if="visibleFields.includes('length')" class="mb-4">
+              <label class="text-subtitle-1 mb-1 d-block">
+                Article Length <span class="text-red">*</span>
+              </label>
+              <v-select 
+                v-model="articleLength" 
+                :items="lengthOptions"
+                :rules="requiredRule"
+                density="comfortable"
+                variant="outlined"
+                hide-details="auto"
+                required
+              ></v-select>
+            </div>
+
+            <div v-if="visibleFields.includes('tone')" class="mb-4">
+              <label class="text-subtitle-1 mb-1 d-block">
+                Tone of Voice <span class="text-red">*</span>
+              </label>
+              <v-select 
+                v-model="toneOfVoice" 
+                :items="toneOptions"
+                :rules="requiredRule"
+                density="comfortable"
+                variant="outlined"
+                hide-details="auto"
+                required
+              ></v-select>
+            </div>
+
+            <div v-if="visibleFields.includes('pov')" class="mb-4">
+              <label class="text-subtitle-1 mb-1 d-block">
+                Point of View <span class="text-red">*</span>
+              </label>
+              <v-select 
+                v-model="pointOfView" 
+                :items="povOptions"
+                :rules="requiredRule"
+                density="comfortable"
+                variant="outlined"
+                hide-details="auto"
+                required
+              ></v-select>
+            </div>
+
+            <div v-if="visibleFields.includes('instructions')" class="mb-4">
+              <label class="text-subtitle-1 mb-1 d-block">
+                Instructions to AI <span class="text-red">*</span>
+              </label>
+              <v-textarea 
+                v-model="additionalInstructions" 
+                rows="3"
+                density="comfortable"
+                variant="outlined"
+                hide-details="auto"
+                :rules="selectedBlogType === 2 ? requiredRule : []"
+                placeholder="Add specific instructions for the AI (e.g., 'Create a blog about farming techniques', 'Focus on beginner-friendly content')"
+                :required="selectedBlogType === 2"
+              ></v-textarea>
+            </div>
+
+            <v-btn 
+              color="primary" 
+              block 
+              :loading="loading" 
+              type="submit"
+              :disabled="!isFormValid"
+            >
+              Generate Outline
+            </v-btn>
+          </v-form>
+        </template>
       </v-card>
 
       <v-card v-else-if="outline && !article" class="pa-6">
@@ -327,12 +336,14 @@
 import { useBlogStore } from '@/stores/blogStore'
 import { mapState, mapActions } from 'pinia'
 import draggable from 'vuedraggable'
+import BlogTypePrompt from '@/components/BlogTypePrompt.vue'
 
 export default {
   name: 'BlogArticles',
 
   components: {
-    draggable
+    draggable,
+    BlogTypePrompt
   },
 
   data() {
@@ -370,6 +381,7 @@ export default {
       povOptions: ['First Person', 'Second Person', 'Third Person'],
       formValid: false,
       drawer: true,
+      selectedBlogType: null,
     }
   },
 
@@ -385,17 +397,43 @@ export default {
     },
 
     isFormValid() {
-      return !!(
-        this.blogTitle && 
-        this.selectedTranscripts.length > 0 && 
-        this.articleLength && 
-        this.toneOfVoice && 
-        this.pointOfView
-      )
+      if (!this.selectedBlogType) return false
+      
+      const hasTitle = !!this.blogTitle
+      
+      if (this.selectedBlogType === 1) {
+        return hasTitle && this.selectedTranscripts.length > 0
+      } else if (this.selectedBlogType === 2) {
+        return hasTitle && !!this.additionalInstructions
+      } else if (this.selectedBlogType === 3) {
+        return hasTitle && 
+               this.selectedTranscripts.length > 0 && 
+               this.articleLength && 
+               this.toneOfVoice && 
+               this.pointOfView
+      }
+      
+      return false
     },
 
     isMobile() {
       return this.$vuetify.display.mobile
+    },
+
+    visibleFields() {
+      if (!this.selectedBlogType) return []
+      
+      const fields = ['blogTitle']
+      
+      if (this.selectedBlogType === 1) {
+        fields.push('transcripts')
+      } else if (this.selectedBlogType === 2) {
+        fields.push('instructions')
+      } else if (this.selectedBlogType === 3) {
+        fields.push('transcripts', 'length', 'tone', 'pov', 'instructions')
+      }
+      
+      return fields
     }
   },
 
@@ -436,6 +474,7 @@ export default {
         article: null
       })
       this.formValid = false
+      this.selectedBlogType = null
     },
 
     loadChat(chat) {
