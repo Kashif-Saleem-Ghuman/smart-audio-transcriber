@@ -183,6 +183,11 @@ export default {
               title: 'Listing',
               icon: 'mdi-view-list',
               path: '/dashboard/listing'
+            },
+            {
+              title: 'Articles',
+              icon: 'mdi-file-document-outline',
+              path: '/dashboard/articles'
             }
           ]
         },
@@ -215,11 +220,6 @@ export default {
           type: 'group',
           value: 'write',
           children: [
-            {
-              title: 'Process Transcriptions',
-              icon: 'mdi-file-document-outline',
-              path: '/dashboard/process-transcriptions'
-            },
             {
               title: 'Blog Articles',
               icon: 'mdi-post-outline',

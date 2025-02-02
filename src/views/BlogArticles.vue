@@ -319,18 +319,6 @@
           </v-list>
         </v-menu>
       </v-card>
-
-      <v-card v-else class="pa-6">
-        <div class="d-flex justify-space-between align-center mb-6">
-          <h2 class="text-h5">Generated Article</h2>
-          <div>
-            <v-btn icon="mdi-content-copy" @click="copyArticle"></v-btn>
-            <v-btn icon="mdi-download" @click="downloadArticle"></v-btn>
-          </div>
-        </div>
-
-        <div v-html="article" class="article-content"></div>
-      </v-card>
     </div>
   </div>
 </template>
@@ -529,6 +517,9 @@ export default {
       if (currentChat) {
         currentChat.article = this.article;
       }
+
+      // Navigate to blog-articles route
+      this.$router.push('/dashboard/articles');
     },
 
     goBackToInput() {

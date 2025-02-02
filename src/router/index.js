@@ -49,9 +49,9 @@ const routes = [
         component: () => import('@/views/TranscribeAudio.vue')
       },
       {
-        path: 'process-transcriptions',
-        name: 'ProcessTranscriptions',
-        component: () => import('@/views/ProcessTranscriptions.vue')
+        path: 'articles',
+        name: 'Articles',
+        component: () => import('@/views/GeneratedArticles.vue')
       },
       {
         path: 'subscriptions',
