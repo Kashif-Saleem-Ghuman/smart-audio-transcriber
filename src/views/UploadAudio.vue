@@ -229,7 +229,7 @@ export default {
   },
 
   created() {
-    this.initializeWebSocket();
+    // this.initializeWebSocket();
   },
 
   mounted() {
@@ -302,56 +302,369 @@ export default {
     },
 
     handleFileChange(event, index) {
-      if (!event) {
-        this.audioFiles[index].file = null;
-        this.audioFiles[index].name = "";
-        this.audioFiles[index].size = 0;
-        this.audioFiles[index].fileError = null;
-        return;
-      }
+  if (!event) {
+    this.audioFiles[index].file = null;
+    this.audioFiles[index].name = "";
+    this.audioFiles[index].size = 0;
+    this.audioFiles[index].fileError = null;
+    return;
+  }
 
-      const file = event instanceof File ? event : event.target.files?.[0];
-      if (!file) return;
+  const file = event instanceof File ? event : event.target.files?.[0];
+  if (!file) return;
 
-      // if (file.size > 20 * 1024 * 1024) {
-      //   this.audioFiles[index].fileError = "File size should not exceed 20MB";
-      //   this.audioFiles[index].file = null;
-      //   this.audioFiles[index].name = "";
-      //   this.audioFiles[index].size = 0;
-      // } 
-        this.audioFiles[index].file = file;
-        this.audioFiles[index].name = file.name;
-        this.audioFiles[index].size = file.size;
-        this.audioFiles[index].fileError = null;
-    },
+  this.audioFiles[index].file = file;
+  this.audioFiles[index].name = file.name;
+  this.audioFiles[index].size = file.size;
+  this.audioFiles[index].fileError = null;
+
+  // Process audio file into 30-second chunks
+  this.splitAudioIntoChunks(file, index);
+  console.log("Done ")
+},
 
     triggerFileInput() {
       this.addNewCard();
     },
 
+    // async uploadFiles() {
+    //   if (!this.isValidForm) return;
+
+    //   this.uploading = true;
+    //   this.error = null;
+    //   const audioStore = useAudioStore();
+
+    //   try {
+    //     for (const file of this.audioFiles) {
+    //       debugger
+    //       console.log("Files being uploaded", this.audioFiles);
+    //       console.log("single file being uploaded", file);
+    //       await audioStore.uploadSingleFile(file.file, file.title);
+    //     }
+    //     this.isFileUploaded = true;
+    //     this.audioFiles = [];
+    //   } catch (error) {
+    //     console.error("Upload failed:", error);
+    //     this.error = error.message || "Failed to upload audio file";
+    //   } finally {
+    //     this.uploading = false;
+    //     this.uploadProgress = 0;
+    //   }
+    // },
+
+
+//     async splitAudioIntoChunks(file, index) {
+//   const audioContext = new AudioContext();
+//   const arrayBuffer = await file.arrayBuffer();
+//   const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+
+//   const chunkDuration = 30; // 30 seconds
+//   const sampleRate = audioBuffer.sampleRate;
+//   const frameCount = chunkDuration * sampleRate;
+
+//   this.audioFiles[index].chunks = [];
+
+//   for (let i = 0; i < audioBuffer.duration; i += chunkDuration) {
+//     const startSample = i * sampleRate;
+//     const endSample = Math.min(startSample + frameCount, audioBuffer.length);
+
+//     const chunkBuffer = audioContext.createBuffer(
+//       audioBuffer.numberOfChannels,
+//       endSample - startSample,
+//       sampleRate
+//     );
+
+//     for (let channel = 0; channel < audioBuffer.numberOfChannels; channel++) {
+//       chunkBuffer
+//         .getChannelData(channel)
+//         .set(audioBuffer.getChannelData(channel).slice(startSample, endSample));
+//     }
+
+//     // Convert directly to Blob instead of encoding
+//     const chunkBlob = new Blob([this.convertBufferToWav(chunkBuffer)], {
+//       type: "audio/wav",
+//     });
+
+  
+//     this.audioFiles[index].chunks.push(chunkBlob);
+//   }
+// },
+
+// convertBufferToWav(audioBuffer) {
+//   const numOfChan = audioBuffer.numberOfChannels,
+//     length = audioBuffer.length * numOfChan * 2 + 44,
+//     buffer = new ArrayBuffer(length),
+//     view = new DataView(buffer),
+//     channels = [],
+//     sampleRate = audioBuffer.sampleRate,
+//     bitDepth = 16;
+
+//   let offset = 0;
+
+//   // Write WAV header
+//   const writeString = (str) => {
+//     for (let i = 0; i < str.length; i++) {
+//       view.setUint8(offset + i, str.charCodeAt(i));
+//     }
+//     offset += str.length;
+//   };
+
+//   writeString("RIFF");
+//   view.setUint32(offset, 36 + audioBuffer.length * numOfChan * 2, true);
+//   offset += 4;
+//   writeString("WAVE");
+//   writeString("fmt ");
+//   view.setUint32(offset, 16, true);
+//   offset += 4;
+//   view.setUint16(offset, 1, true);
+//   offset += 2;
+//   view.setUint16(offset, numOfChan, true);
+//   offset += 2;
+//   view.setUint32(offset, sampleRate, true);
+//   offset += 4;
+//   view.setUint32(offset, sampleRate * numOfChan * (bitDepth / 8), true);
+//   offset += 4;
+//   view.setUint16(offset, numOfChan * (bitDepth / 8), true);
+//   offset += 2;
+//   view.setUint16(offset, bitDepth, true);
+//   offset += 2;
+//   writeString("data");
+//   view.setUint32(offset, audioBuffer.length * numOfChan * (bitDepth / 8), true);
+//   offset += 4;
+
+//   // Write interleaved audio data
+//   for (let i = 0; i < numOfChan; i++) {
+//     channels.push(audioBuffer.getChannelData(i));
+//   }
+
+//   const interleaved = new Int16Array(audioBuffer.length * numOfChan);
+//   let index = 0;
+
+//   for (let i = 0; i < audioBuffer.length; i++) {
+//     for (let j = 0; j < numOfChan; j++) {
+//       interleaved[index++] = Math.max(-1, Math.min(1, channels[j][i])) * 0x7fff;
+//     }
+//   }
+
+//   for (let i = 0; i < interleaved.length; i++, offset += 2) {
+//     view.setInt16(offset, interleaved[i], true);
+//   }
+
+//   return buffer;
+// }
+
+
+async splitAudioIntoChunks(file, index) {
+      const audioContext = new AudioContext();
+      const arrayBuffer = await file.arrayBuffer();
+      const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+
+      // Calculate optimal chunk size based on audio duration
+      const optimalChunkDuration = this.calculateOptimalChunkSize(audioBuffer.duration);
+      const sampleRate = audioBuffer.sampleRate;
+      const samplesPerChunk = optimalChunkDuration * sampleRate;
+
+      this.audioFiles[index].chunks = [];
+      this.processingStatus = "Splitting audio into chunks...";
+
+      let startSample = 0;
+      while (startSample < audioBuffer.length) {
+        const endSample = Math.min(startSample + samplesPerChunk, audioBuffer.length);
+        const chunkDuration = (endSample - startSample) / sampleRate;
+
+        // Only process chunks longer than 0.5 seconds to avoid empty chunks
+        if (chunkDuration > 0.5) {
+          const chunkBuffer = audioContext.createBuffer(
+            audioBuffer.numberOfChannels,
+            endSample - startSample,
+            sampleRate
+          );
+
+          for (let channel = 0; channel < audioBuffer.numberOfChannels; channel++) {
+            const channelData = audioBuffer.getChannelData(channel).slice(startSample, endSample);
+            chunkBuffer.getChannelData(channel).set(channelData);
+          }
+
+          // Convert to WAV with properly maintained audio quality
+          const chunkBlob = new Blob([this.convertBufferToWav(chunkBuffer, 32)], {
+            type: "audio/wav",
+          });
+
+          this.audioFiles[index].chunks.push({
+            blob: chunkBlob,
+            startTime: startSample / sampleRate,
+            duration: chunkDuration
+          });
+        }
+        startSample = endSample;
+      }
+
+      console.log(`Created ${this.audioFiles[index].chunks.length} chunks for processing`);
+      this.processingStatus = `Created ${this.audioFiles[index].chunks.length} chunks for processing`;
+    },
+
+    calculateOptimalChunkSize(totalDuration) {
+      // For files under 1 minute, use 15-second chunks
+      if (totalDuration <= 60) {
+        return 15;
+      }
+      // For files between 1-5 minutes, use 20-second chunks
+      else if (totalDuration <= 300) {
+        return 20;
+      }
+      // For longer files, use 30-second chunks
+      return 30;
+    },
+
+    convertBufferToWav(audioBuffer, bitDepth = 32) {
+      const numOfChan = audioBuffer.numberOfChannels;
+      const length = audioBuffer.length * numOfChan * (bitDepth / 8) + 44;
+      const buffer = new ArrayBuffer(length);
+      const view = new DataView(buffer);
+      const channels = [];
+      const sampleRate = audioBuffer.sampleRate;
+      
+      let offset = 0;
+
+      // Improved WAV header writing with error checking
+      const writeString = (str) => {
+        for (let i = 0; i < str.length; i++) {
+          view.setUint8(offset + i, str.charCodeAt(i));
+        }
+        offset += str.length;
+      };
+
+      // Write WAV header with higher precision
+      writeString("RIFF");
+      view.setUint32(offset, 36 + audioBuffer.length * numOfChan * (bitDepth / 8), true);
+      offset += 4;
+      writeString("WAVE");
+      writeString("fmt ");
+      view.setUint32(offset, 16, true);
+      offset += 4;
+      view.setUint16(offset, 1, true);
+      offset += 2;
+      view.setUint16(offset, numOfChan, true);
+      offset += 2;
+      view.setUint32(offset, sampleRate, true);
+      offset += 4;
+      view.setUint32(offset, sampleRate * numOfChan * (bitDepth / 8), true);
+      offset += 4;
+      view.setUint16(offset, numOfChan * (bitDepth / 8), true);
+      offset += 2;
+      view.setUint16(offset, bitDepth, true);
+      offset += 2;
+      writeString("data");
+      view.setUint32(offset, audioBuffer.length * numOfChan * (bitDepth / 8), true);
+      offset += 4;
+
+      // Improved audio data writing with better precision
+      for (let i = 0; i < numOfChan; i++) {
+        channels.push(audioBuffer.getChannelData(i));
+      }
+
+      if (bitDepth === 32) {
+        // Use 32-bit float for better quality
+        for (let i = 0; i < audioBuffer.length; i++) {
+          for (let j = 0; j < numOfChan; j++) {
+            view.setFloat32(offset, channels[j][i], true);
+            offset += 4;
+          }
+        }
+      } else {
+        // Use 16-bit PCM as fallback
+        const factor = 0x7fff; // 32767
+        for (let i = 0; i < audioBuffer.length; i++) {
+          for (let j = 0; j < numOfChan; j++) {
+            const sample = Math.max(-1, Math.min(1, channels[j][i]));
+            view.setInt16(offset, sample * factor, true);
+            offset += 2;
+          }
+        }
+      }
+
+      return buffer;
+    },
+
     async uploadFiles() {
+      debugger
       if (!this.isValidForm) return;
 
       this.uploading = true;
+      this.transcription = "";
       this.error = null;
-      const audioStore = useAudioStore();
+
+      const apiKey = 'addApiKeyHere'; // Replace with actual API key
+  ; // Move API key to environment variable
+
+      for (const file of this.audioFiles) {
+        this.processingStatus = `Processing file: ${file.name}`;
+        
+        // Process chunks in batches to avoid overwhelming the API
+        const batchSize = 3;
+        for (let i = 0; i < file.chunks.length; i += batchSize) {
+          const batch = file.chunks.slice(i, i + batchSize);
+          const chunkPromises = batch.map((chunk, batchIndex) => 
+            this.transcribeChunk(chunk.blob, file.name, apiKey, i + batchIndex)
+          );
+
+          try {
+            const results = await Promise.all(chunkPromises);
+            this.processingStatus = `Completed ${i + batch.length} of ${file.chunks.length} chunks`;
+
+            // Sort and concatenate results
+            results
+              .sort((a, b) => a.index - b.index)
+              .forEach(res => {
+                if (res.text) {
+                  this.transcription += res.text + " ";
+                }
+              });
+
+          } catch (error) {
+            console.error("Error processing batch:", error);
+            this.error = `Error processing batch starting at chunk ${i}`;
+          }
+
+          // Add a small delay between batches to avoid rate limiting
+          if (i + batchSize < file.chunks.length) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+        }
+      }
+
+      this.uploading = false;
+      this.isFileUploaded = true;
+      this.processingStatus = "Transcription complete";
+      console.log("Final Transcription Length:", this.transcription.length);
+    },
+
+    async transcribeChunk(chunk, fileName, apiKey, index) {
+      const formData = new FormData();
+      formData.append("file", chunk, `${fileName}-chunk-${index}.wav`);
+      formData.append("model", "whisper-1");
 
       try {
-        for (const file of this.audioFiles) {
-          console.log("Files being uploaded", this.audioFiles);
-          console.log("single file being uploaded", file);
-          await audioStore.uploadSingleFile(file.file, file.title);
+        const response = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+          },
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
-        this.isFileUploaded = true;
-        this.audioFiles = [];
+
+        const data = await response.json();
+        return { text: data.text || "", index };
       } catch (error) {
-        console.error("Upload failed:", error);
-        this.error = error.message || "Failed to upload audio file";
-      } finally {
-        this.uploading = false;
-        this.uploadProgress = 0;
+        console.error(`Error transcribing chunk ${index}:`, error);
+        throw error; // Propagate error to be handled by caller
       }
-    },
+    }
+
   },
 };
 </script>
