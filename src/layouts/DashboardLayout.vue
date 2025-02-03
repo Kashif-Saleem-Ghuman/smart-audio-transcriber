@@ -180,7 +180,7 @@ export default {
           value: 'files',
           children: [
             {
-              title: 'Listing',
+              title: 'Transcripts',
               icon: 'mdi-view-list',
               path: '/dashboard/listing'
             },
