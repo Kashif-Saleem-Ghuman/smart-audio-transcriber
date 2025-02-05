@@ -93,8 +93,28 @@
                             </div>
                           </div>
 
+                          <!-- Add progress indicator -->
+                          <div v-if="uploading && fileProgress[file.id]" class="mt-4">
+                            <div class="d-flex justify-space-between mb-1">
+                              <span class="text-caption">Transcription Progress</span>
+                              <span class="text-caption">{{ fileProgress[file.id].percentage }}%</span>
+                            </div>
+                            <v-progress-linear
+                              :model-value="fileProgress[file.id].percentage"
+                              color="primary"
+                              height="8"
+                              rounded
+                            ></v-progress-linear>
+                            <!-- <div class="text-caption text-medium-emphasis mt-1">
+                              Processed {{ fileProgress[file.id].processed }} of {{ fileProgress[file.id].total }} chunks
+                            </div> -->
+                          </div>
+
                           <!-- Show linear loader if chunks are being processed -->
-                          <v-progress-linear v-if="isChunkProcessingComplete[file.id]" indeterminate color="primary"
+                          <v-progress-linear 
+                            v-if="isChunkProcessingComplete[file.id]" 
+                            indeterminate 
+                            color="primary"
                             class="mt-2">
                           </v-progress-linear>
                         </div>
@@ -149,6 +169,7 @@ export default {
       uploadProgress: 0,
       isChunkProcessingComplete: {},
       apiUrl: import.meta.env.VITE_APP_API_KEY,
+      fileProgress: {}, // Add this new property to track progress for each file
     };
   },
 
@@ -431,7 +452,6 @@ export default {
      * Handles transcription of audio chunks in batches
      */
     async uploadFiles() {
-      // debugger
       if (!this.isValidForm) return;
 
       this.uploading = true;
@@ -439,15 +459,18 @@ export default {
       this.error = null;
       
       const apiKey = this.apiUrl;
-      
-      // Create a map to store transcriptions for each file
-      const fileTranscriptions = new Map();
 
       for (const file of this.audioFiles) {
+        // Initialize progress for this file
+        this.fileProgress[file.id] = {
+          processed: 0,
+          total: file.chunks.length,
+          percentage: 0
+        };
+
         this.processingStatus = `Processing file: ${file.name}`;
         let fileChunks = [];
 
-        // Process chunks in batches to avoid overwhelming the API
         const batchSize = 3;
         for (let i = 0; i < file.chunks.length; i += batchSize) {
           const batch = file.chunks.slice(i, i + batchSize);
@@ -457,9 +480,13 @@ export default {
 
           try {
             const results = await Promise.all(chunkPromises);
-            this.processingStatus = `Completed ${i + batch.length} of ${file.chunks.length} chunks`;
+            
+            // Update progress for this file
+            this.fileProgress[file.id].processed += batch.length;
+            this.fileProgress[file.id].percentage = Math.round(
+              (this.fileProgress[file.id].processed / this.fileProgress[file.id].total) * 100
+            );
 
-            // Sort chunks by index and store them
             results
               .sort((a, b) => a.index - b.index)
               .forEach(res => {
@@ -473,7 +500,6 @@ export default {
             this.error = `Error processing file ${file.name}: ${error.message}`;
           }
 
-          // Add a small delay between batches to avoid rate limiting
           if (i + batchSize < file.chunks.length) {
             await new Promise(resolve => setTimeout(resolve, 1000));
           }
@@ -679,5 +705,12 @@ export default {
   padding: 15px;
   border: 1px solid #ddd;
   border-radius: 4px;
+}
+
+/* Add these new styles */
+.progress-wrapper {
+  background: rgba(var(--v-theme-surface-variant), 0.5);
+  border-radius: 4px;
+  padding: 8px;
 }
 </style>
