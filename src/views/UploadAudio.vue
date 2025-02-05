@@ -37,9 +37,12 @@
 
           <!-- Cards Container -->
           <div class="cards-container">
+<<<<<<< HEAD
+=======
             <!-- Hidden file input -->
             <input ref="fileInput" type="file" multiple accept="audio/*" class="d-none" @change="handleFileChange" />
 
+>>>>>>> 2dd2db7 (Added chunking to transcribe audio , handled loading states and error)
             <template v-if="audioFiles.length === 0">
               <div class="empty-state pa-8 text-center">
                 <v-icon size="64" color="primary" class="mb-4">mdi-upload</v-icon>
@@ -121,6 +124,14 @@
         </v-card>
       </v-col>
     </v-row>
+
+    <!-- Update the display of transcriptions -->
+    <div v-if="transcription.length > 0" class="transcription-container">
+      <div v-for="item in transcription" :key="item.id" class="transcription-item">
+        <h3>{{ item.fileName }}</h3>
+        <p>{{ item.text }}</p>
+      </div>
+    </div>
   </v-container>
 </template>
 
@@ -140,7 +151,7 @@ export default {
       error: null,
       isFileUploaded: false,
       socket: null,
-      transcription: "",
+      transcription: [],
       uploadProgress: 0,
       isChunkProcessingComplete: {},
       apiUrl: import.meta.env.VITE_APP_API_KEY,
@@ -189,7 +200,11 @@ export default {
       // Listen for transcription chunks
       this.socket.on("transcription_chunk", (chunk) => {
         console.log("Chunk ---- On ------ ", chunk);
-        this.transcription += chunk + " ";
+        this.transcription.push({
+          id: Date.now() + '-' + chunk,
+          text: chunk,
+          fileName: ""
+        });
       });
 
       this.socket.on("connect", () => {
@@ -329,16 +344,16 @@ export default {
      * @returns {number} Optimal chunk size in seconds
      */
     calculateOptimalChunkSize(totalDuration) {
-      // For files under 1 minute, use 15-second chunks
+      // For files under 1 minute, use 30-second chunks
       if (totalDuration <= 60) {
-        return 15;
+        return 30;
       }
-      // For files between 1-5 minutes, use 20-second chunks
+      // For files between 1-5 minutes, use 45-second chunks
       else if (totalDuration <= 300) {
-        return 20;
+        return 45;
       }
-      // For longer files, use 30-second chunks
-      return 30;
+      // For longer files, use 45 -second chunks
+      return 45;
     },
 
     /**
@@ -426,12 +441,17 @@ export default {
       if (!this.isValidForm) return;
 
       this.uploading = true;
-      this.transcription = "";
+      this.transcription = [];
       this.error = null;
-      // get the api key from the environment variable
+      
       const apiKey = this.apiUrl;
+      
+      // Create a map to store transcriptions for each file
+      const fileTranscriptions = new Map();
+
       for (const file of this.audioFiles) {
         this.processingStatus = `Processing file: ${file.name}`;
+        let fileChunks = [];
 
         // Process chunks in batches to avoid overwhelming the API
         const batchSize = 3;
@@ -445,18 +465,18 @@ export default {
             const results = await Promise.all(chunkPromises);
             this.processingStatus = `Completed ${i + batch.length} of ${file.chunks.length} chunks`;
 
-            // Sort and concatenate results
+            // Sort chunks by index and store them
             results
               .sort((a, b) => a.index - b.index)
               .forEach(res => {
                 if (res.text) {
-                  this.transcription += res.text + " ";
+                  fileChunks.push(res.text);
                 }
               });
 
           } catch (error) {
             console.error("Error processing batch:", error);
-            this.error = `Error processing batch starting at chunk ${i}`;
+            this.error = `Error processing file ${file.name}: ${error.message}`;
           }
 
           // Add a small delay between batches to avoid rate limiting
@@ -464,12 +484,22 @@ export default {
             await new Promise(resolve => setTimeout(resolve, 1000));
           }
         }
+
+        // After processing all chunks for this file, combine them and add to transcription array
+        if (fileChunks.length > 0) {
+          this.transcription.push({
+            id: Date.now() + '-' + file.name,
+            fileName: file.name,
+            text: fileChunks.join(' '),
+            title: file.title || file.name // Include the optional title if provided
+          });
+        }
       }
 
       this.uploading = false;
       this.isFileUploaded = true;
       this.processingStatus = "Transcription complete";
-      console.log("Final Transcription Length:", this.transcription);
+      console.log("Final Transcriptions:", this.transcription);
     },
 
     /**
@@ -644,5 +674,16 @@ export default {
 
 :deep(.v-card-text) {
   padding: 16px 8px !important;
+}
+
+.transcription-container {
+  margin-top: 20px;
+}
+
+.transcription-item {
+  margin-bottom: 20px;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
 }
 </style>
