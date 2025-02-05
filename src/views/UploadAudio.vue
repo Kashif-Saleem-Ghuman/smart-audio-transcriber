@@ -37,12 +37,6 @@
 
           <!-- Cards Container -->
           <div class="cards-container">
-<<<<<<< HEAD
-=======
-            <!-- Hidden file input -->
-            <input ref="fileInput" type="file" multiple accept="audio/*" class="d-none" @change="handleFileChange" />
-
->>>>>>> 2dd2db7 (Added chunking to transcribe audio , handled loading states and error)
             <template v-if="audioFiles.length === 0">
               <div class="empty-state pa-8 text-center">
                 <v-icon size="64" color="primary" class="mb-4">mdi-upload</v-icon>
