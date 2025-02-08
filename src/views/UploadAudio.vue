@@ -93,8 +93,8 @@
                             </div>
                           </div>
 
-                          <!-- Add progress indicator -->
-                          <div v-if="uploading && fileProgress[file.id]" class="mt-4">
+                          <!-- Update the progress indicator section in the template -->
+                          <div v-if="uploading && fileProgress[file.id] && !uploadedFiles.has(file.id)" class="mt-4">
                             <div class="d-flex justify-space-between mb-1">
                               <span class="text-caption">Transcription Progress</span>
                               <span class="text-caption">{{ fileProgress[file.id].percentage }}%</span>
@@ -105,9 +105,14 @@
                               height="8"
                               rounded
                             ></v-progress-linear>
-                            <!-- <div class="text-caption text-medium-emphasis mt-1">
-                              Processed {{ fileProgress[file.id].processed }} of {{ fileProgress[file.id].total }} chunks
-                            </div> -->
+                          </div>
+
+                          <!-- Add an indicator for completed uploads -->
+                          <div v-if="uploadedFiles.has(file.id)" class="mt-4">
+                            <div class="d-flex align-center text-success">
+                              <v-icon color="success" class="me-2">mdi-check-circle</v-icon>
+                              <span class="text-caption">Upload Complete</span>
+                            </div>
                           </div>
 
                           <!-- Show linear loader if chunks are being processed -->
@@ -169,7 +174,8 @@ export default {
       uploadProgress: 0,
       isChunkProcessingComplete: {},
       apiUrl: import.meta.env.VITE_APP_API_KEY,
-      fileProgress: {}, // Add this new property to track progress for each file
+      fileProgress: {},
+      uploadedFiles: new Set(),
     };
   },
 
@@ -261,6 +267,9 @@ export default {
      * @param {number} index - Index of file to remove
      */
     removeFile(index) {
+      const fileId = this.audioFiles[index].id;
+      this.uploadedFiles.delete(fileId);
+      delete this.fileProgress[fileId];
       this.audioFiles.splice(index, 1);
     },
 
@@ -271,6 +280,9 @@ export default {
      */
     handleFileChange(event, index) {
       if (!event) {
+        const fileId = this.audioFiles[index].id;
+        this.uploadedFiles.delete(fileId);
+        delete this.fileProgress[fileId];
         this.audioFiles[index].file = null;
         this.audioFiles[index].name = "";
         this.audioFiles[index].size = 0;
@@ -455,12 +467,16 @@ export default {
       if (!this.isValidForm) return;
 
       this.uploading = true;
-      this.transcription = [];
       this.error = null;
       
       const apiKey = this.apiUrl;
 
       for (const file of this.audioFiles) {
+        // Skip already uploaded files
+        if (this.uploadedFiles.has(file.id)) {
+          continue;
+        }
+
         // Initialize progress for this file
         this.fileProgress[file.id] = {
           processed: 0,
@@ -505,13 +521,16 @@ export default {
           }
         }
 
+        // After successful processing, mark the file as uploaded
+        this.uploadedFiles.add(file.id);
+
         // After processing all chunks for this file, combine them and add to transcription array
         if (fileChunks.length > 0) {
           this.transcription.push({
             id: Date.now() + '-' + file.name,
             fileName: file.name,
             text: fileChunks.join(' '),
-            title: file.title || file.name // Include the optional title if provided
+            title: file.title || file.name
           });
         }
       }
