@@ -329,6 +329,7 @@
         </v-menu>
       </v-card>
     </div>
+    
   </div>
 </template>
 
@@ -497,34 +498,77 @@ export default {
     },
 
     async handleGenerateOutline() {
-      const currentChat = this.chatHistory.find(chat => chat.id === this.currentChatId)
-      if (currentChat) {
-        // Update chat title with blog title
-        currentChat.title = this.blogTitle || this.defaultChatTitle
-        
-        // Save current settings
-        currentChat.settings = {
-          blogTitle: this.blogTitle,
-          selectedTranscripts: this.selectedTranscripts,
-          articleLength: this.articleLength,
-          toneOfVoice: this.toneOfVoice,
-          pointOfView: this.pointOfView,
-          additionalInstructions: this.additionalInstructions
+      try {
+        // Save current chat state first
+        const currentChat = this.chatHistory.find(chat => chat.id === this.currentChatId)
+        if (currentChat) {
+          currentChat.title = this.blogTitle || this.defaultChatTitle
+          currentChat.settings = {
+            blogTitle: this.blogTitle,
+            selectedTranscripts: this.selectedTranscripts,
+            articleLength: this.articleLength,
+            toneOfVoice: this.toneOfVoice,
+            pointOfView: this.pointOfView,
+            additionalInstructions: this.additionalInstructions
+          }
         }
-      }
 
-      await this.generateOutline({
-        title: this.blogTitle,
-        transcripts: this.selectedTranscripts,
-        length: this.articleLength,
-        tone: this.toneOfVoice,
-        pov: this.pointOfView,
-        instructions: this.additionalInstructions
-      })
+        // Construct the prompt based on blog type and inputs
+        let prompt = `Create a detailed outline for a blog article titled "${this.blogTitle}". `
+        
+        if (this.selectedBlogType === 1) {
+          prompt += `Use the following transcripts as source material: ${this.selectedTranscripts.map(t => t.title).join(', ')}. `
+        } else if (this.selectedBlogType === 2) {
+          prompt += `Following these instructions: ${this.additionalInstructions}. `
+        } else if (this.selectedBlogType === 3) {
+          prompt += `
+            Use these transcripts: ${this.selectedTranscripts.map(t => t.title).join(', ')}.
+            Article length should be ${this.articleLength}.
+            Tone should be ${this.toneOfVoice}.
+            Write in ${this.pointOfView} point of view.
+            Additional instructions: ${this.additionalInstructions}
+          `
+        }
 
-      // Save generated outline to current chat
-      if (currentChat) {
-        currentChat.outline = this.outline
+        prompt += `
+          Format the outline with main sections (H2) and subsections (H3).
+          Return the response as a JSON object with this structure:
+          {
+            "sections": [
+              {
+                "id": "unique_id",
+                "level": "H2",
+                "title": "Section Title",
+                "subsections": [
+                  {
+                    "id": "unique_id",
+                    "level": "H3",
+                    "title": "Subsection Title"
+                  }
+                ]
+              }
+            ]
+          }
+        `
+
+        // Call the OpenAI API through your store action
+        await this.generateOutline({
+          prompt,
+          title: this.blogTitle,
+          transcripts: this.selectedTranscripts,
+          length: this.articleLength,
+          tone: this.toneOfVoice,
+          pov: this.pointOfView,
+          instructions: this.additionalInstructions
+        })
+
+        // Save generated outline to current chat
+        if (currentChat) {
+          currentChat.outline = this.outline
+        }
+      } catch (error) {
+        console.error('Error generating outline:', error)
+        // Handle error appropriately (show error message to user)
       }
     },
 

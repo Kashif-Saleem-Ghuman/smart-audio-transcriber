@@ -6,69 +6,45 @@ export const useBlogStore = defineStore('blog', {
     article: null,
     loading: false,
     selectedTranscriptions: [],
+    error: null
   }),
 
   actions: {
-    async generateOutline(params) {
+    async generateOutline({ prompt, ...metadata }) {
       this.loading = true
+      this.error = null
+      
       try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500))
-        this.outline = {
-          intro: { 
-            title: 'Introduction',
-            level: 'H1',
-            content: '' 
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_APP_GPT_KEY}`
           },
-          sections: [
-            {
-              id: 'h2_1',
-              level: 'H2',
-              title: 'Influential Leadership and Policies',
-              content: '',
-              subsections: [
-                {
-                  id: 'h3_1',
-                  level: 'H3',
-                  title: 'George Washington: Setting Precedents',
-                  content: ''
-                },
-                {
-                  id: 'h3_2',
-                  level: 'H3',
-                  title: 'Abraham Lincoln: Preserving the Union',
-                  content: ''
-                },
-                {
-                  id: 'h3_3',
-                  level: 'H3',
-                  title: 'Franklin D. Roosevelt: New Deal and WWII',
-                  content: ''
-                }
-              ]
-            },
-            {
-              id: 'h2_2',
-              level: 'H2',
-              title: 'Legacy and Impact on Society',
-              content: '',
-              subsections: [
-                {
-                  id: 'h3_4',
-                  level: 'H3',
-                  title: 'Thomas Jefferson: Expansion and Enlightenment',
-                  content: ''
-                },
-                {
-                  id: 'h3_5',
-                  level: 'H3',
-                  title: 'Theodore Roosevelt: Progressive Reforms',
-                  content: ''
-                }
-              ]
-            }
-          ]
+          body: JSON.stringify({
+            model: 'gpt-4', // or 'gpt-3.5-turbo' depending on your needs
+            messages: [{
+              role: 'user',
+              content: prompt
+            }],
+            temperature: 0.7,
+            max_tokens: 2000
+          })
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to generate outline')
         }
+
+        const data = await response.json()
+        const outlineJson = JSON.parse(data.choices[0].message.content)
+        
+        // Update the store with the generated outline
+        this.outline = outlineJson
+      } catch (error) {
+        console.error('Error in generateOutline:', error)
+        this.error = error.message
+        throw error
       } finally {
         this.loading = false
       }
